@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Igor Kholopv, All rights reserved.
+   Copyright 2018 Igor Kholopov, All rights reserved.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ namespace TierGine {
 
 interface IMesh : public ILoadableResource {
     virtual void AddAtribute(int id, Tensor value) = 0;
+    virtual void Bind() const = 0;
 };
 
 }
