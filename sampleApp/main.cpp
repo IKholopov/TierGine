@@ -19,6 +19,7 @@
 #include <GLBaseApp.h>
 #include <SimplePipeline.h>
 #include <Tensor.h>
+#include <Log.h>
 
 class SampleApp : public TierGine::GLBaseApp {
 public:
@@ -29,6 +30,9 @@ protected:
 private:
     bool buffersInitialized = false;
     GLuint vao = 0;
+    std::unique_ptr<TierGine::UniformVariable> variable;
+    float val = 0.0;
+
     void initializeBuffers();
     void initializePipeline();
 };
@@ -43,6 +47,12 @@ TG_Status SampleApp::MainLoop()
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    assert(variable != nullptr);
+    val += 0.02;
+    if(val > 6 * 3.14) {
+        val = 0;
+    }
+    variable->Set(val);
     glBindVertexArray(vao);
       // draw points 0-3 from the currently bound VAO with current in-use shader
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -114,5 +124,11 @@ void SampleApp::initializePipeline()
     assert(context != nullptr);
     TierGine::SimplePipeline pipeline(*context, "./res/shaders/rgb.vert.glsl",
                             "./res/shaders/rgb.frag.glsl");
+    auto uniforms = pipeline.GetUniformVariables();
+    TierGine::Log::Info() << "Uniforms: " << std::endl;
+    for(auto uniformIt = uniforms.begin(); uniformIt != uniforms.end(); ++uniformIt) {
+        TierGine::Log::Info() << uniformIt->second.GetName() << std::endl;
+    }
+    variable = std::make_unique<TierGine::UniformVariable>(pipeline.GetUniformVariable("mult"));
     pipeline.Activate();
 }

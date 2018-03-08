@@ -19,6 +19,7 @@
 
 #include <Pipeline.h>
 #include <GLShader.h>
+#include <unordered_map>
 
 namespace TierGine {
 
@@ -30,14 +31,21 @@ public:
     // IPipeline interface
     virtual IContext& GetContext() const override { return context; }
     virtual void BindShader(const IShader* shader) override;
-    virtual void Build() const override;
+    virtual void Build() override;
     virtual void Activate() const override;
+    virtual UniformVariable GetUniformVariable(std::string name) const override;
+    virtual void SetUniformVariable(std::string name, Tensor value) const override;
+    virtual const std::unordered_map<std::string, UniformVariable>& GetUniformVariables() const override
+    { return uniforms; }
 
     void BindShader(const GLShader& shader);
 
 private:
     GLuint programId;
     IContext& context;
+    std::unordered_map<std::string, UniformVariable> uniforms;
+
+    void setUniform(GLint uniformLoc, Tensor value) const;
 };
 
 }

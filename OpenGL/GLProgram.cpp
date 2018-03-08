@@ -22,6 +22,39 @@
 
 namespace TierGine {
 
+namespace {
+
+UniformVariable::TUniformType GetUniformType(GLenum type) {
+    switch (type) {
+    case GL_FLOAT:
+        return UniformVariable::UT_FLOAT;
+        break;
+    case GL_FLOAT_VEC2:
+        return UniformVariable::UT_VEC_2;
+        break;
+    case GL_FLOAT_VEC3:
+        return UniformVariable::UT_VEC_3;
+        break;
+    case GL_FLOAT_VEC4:
+        return UniformVariable::UT_VEC_4;
+        break;
+    case GL_FLOAT_MAT2:
+        return UniformVariable::UT_MAT_2;
+        break;
+    case GL_FLOAT_MAT3:
+        return UniformVariable::UT_MAT_3;
+        break;
+    case GL_FLOAT_MAT4:
+        return UniformVariable::UT_MAT_4;
+        break;
+    default:
+        assert(false);
+        break;
+    }
+}
+
+}
+
 GLProgram::GLProgram(IContext& context) :
     programId(glCreateProgram()),
     context(context)
@@ -38,13 +71,27 @@ void GLProgram::BindShader(const IShader* shader)
     GetContext().BindShader(shader, this);
 }
 
-void GLProgram::Build() const
+void GLProgram::Build()
 {
     glLinkProgram(programId);
     int status = 0;
     glGetProgramiv(programId, GL_LINK_STATUS, &status);
     if(status != GL_TRUE) {
         throw EngineException("Failed to compile program");
+    }
+    GLint count, size;
+    GLsizei length;
+    GLenum type;
+    const GLsizei bufSize = 64; // maximum name length
+    GLchar name[bufSize];
+    glGetProgramiv(programId, GL_ACTIVE_UNIFORMS, &count);
+    for (GLint i = 0; i < count; i++)
+    {
+        glGetActiveUniform(programId, (GLuint)i, bufSize, &length, &size, &type, name);
+        UniformVariable::TUniformType uniformType = GetUniformType(type);
+        std::string strName(static_cast<char*>(name));
+        auto var = UniformVariable(*this, uniformType, strName);
+        uniforms.insert({strName, std::move(var)});
     }
 }
 
@@ -53,9 +100,72 @@ void GLProgram::Activate() const
     glUseProgram(programId);
 }
 
+UniformVariable GLProgram::GetUniformVariable(std::string name) const
+{
+    auto variable = uniforms.find(name);
+    if(variable == uniforms.end()) {
+        throw EngineException("Trying to assign non-existing uniform - " + name);
+    }
+    return variable->second;
+}
+
+void GLProgram::SetUniformVariable(std::string name, Tensor value) const
+{
+    auto variable = uniforms.find(name);
+    if(variable == uniforms.end()) {
+        throw EngineException("Trying to assign non-existing uniform - " + name);
+    }
+    GLint uniformLoc = glGetUniformLocation(programId, name.c_str());
+    setUniform(uniformLoc, value);
+}
+
 void GLProgram::BindShader(const GLShader& shader)
 {
     glAttachShader(programId, shader.GetShaderId());
+}
+
+void GLProgram::setUniform(GLint uniformLoc, Tensor value) const
+{
+    switch (value.GetSize()) {
+    case 4:
+        assert(value.GetChannels() == 4);
+        glProgramUniformMatrix4fv(programId, uniformLoc, 1, GL_FALSE,
+                                  static_cast<const GLfloat*>(value.GetRawPointer()));
+        break;
+    case 3:
+        assert(value.GetChannels() == 3);
+        glProgramUniformMatrix3fv(programId, uniformLoc, 1, GL_FALSE,
+                                  static_cast<const GLfloat*>(value.GetRawPointer()));
+        break;
+    case 2:
+        assert(value.GetChannels() == 2);
+        glProgramUniformMatrix2fv(programId, uniformLoc, 1, GL_FALSE,
+                                  static_cast<const GLfloat*>(value.GetRawPointer()));
+        break;
+    case 1:
+        switch (value.GetChannels()) {
+        case 4:
+            glProgramUniform4fv(programId, uniformLoc, 1,
+                                static_cast<const GLfloat*>(value.GetRawPointer()));
+            break;
+        case 3:
+            glProgramUniform3fv(programId, uniformLoc, 1,
+                                static_cast<const GLfloat*>(value.GetRawPointer()));
+            break;
+        case 2:
+            glProgramUniform2fv(programId, uniformLoc, 1,
+                                static_cast<const GLfloat*>(value.GetRawPointer()));
+            break;
+        case 1:
+            glProgramUniform1f(programId, uniformLoc,
+                               *static_cast<const GLfloat*>(value.GetRawPointer()));
+            break;
+        default:
+            break;
+        }
+    default:
+        break;
+    }
 }
 
 }

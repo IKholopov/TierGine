@@ -17,24 +17,19 @@
 
 #pragma once
 
-#include <Drawable.h>
-#include <WorldObject.h>
+#include <Mesh.h>
 
 namespace TierGine {
 
-interface ISceneObject :
-    public IDrawable,
-    public IWorldObject
-{
-};
+class GLMesh : public IMesh {
+public:
+    GLMesh
+    // ILoadableResource interface
+    virtual void LoadFromPath(std::string path) override;
 
-interface IScene {
-    virtual ~IScene() {}
-
-    // Takes ownership
-    virtual void Add(std::unique_ptr<ISceneObject>& object) = 0;
-    virtual void Render() = 0;
-    virtual void Update() = 0;
+    // IMesh interface
+    virtual void AddAtribute(int id, Tensor value) override;
+    virtual void Bind() const override;
 };
 
 }

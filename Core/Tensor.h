@@ -53,12 +53,17 @@ private:
 template <typename T>
 class TensorData : public Tensor::DataHolder {
 public:
-    TensorData(int length) : length(length) { allocData(); }
-    TensorData(T* data, int length) :
+    TensorData(int length, bool owner = true) :
         length(length),
-        data(data)
-            { assert(data != nullptr); }
-    ~TensorData() { delete data; }
+        owner(owner)
+    { allocData(); }
+
+    TensorData(T* data, int length, bool owner = true) :
+        length(length),
+        data(data),
+        owner(owner)
+    { assert(data != nullptr); }
+    ~TensorData() { if(owner) { delete data;  } }
 
     // DataHolder interface
     virtual void* GetRawAddress() override { return static_cast<void*>(data); }
@@ -68,9 +73,11 @@ public:
 private:
     const int length;
     T* data;
+    bool owner;
 
     void allocData();
 };
+
 
 template <typename T>
 Tensor CreateTensor(int size, int channels, T* ptr = nullptr)
@@ -94,6 +101,8 @@ Tensor CreateTensor(int size, int channels, std::initializer_list<T> values)
     return Tensor(size, channels, std::shared_ptr<Tensor::DataHolder>(new TensorData<T>(ptr, size*channels)));
 }
 
+template <typename T>
+Tensor CreateTensor(T& otherImplementation);
 
 template<typename T>
 void TensorData<T>::allocData()

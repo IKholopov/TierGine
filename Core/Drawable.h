@@ -28,6 +28,7 @@ enum TRenderingMode {
 };
 
 interface IDrawable {
+    virtual ~IDrawable() {}
     virtual void SetRenderingMode(TRenderingMode mode) = 0;
     virtual void Draw() = 0;
 };

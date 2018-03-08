@@ -18,6 +18,10 @@
 #pragma once
 
 #include <Shader.h>
+#include <Tensor.h>
+#include <Uniform.h>
+#include <vector>
+#include <unordered_map>
 
 namespace TierGine {
 
@@ -27,8 +31,11 @@ interface IPipeline {
 
     virtual IContext& GetContext() const = 0;
     virtual void BindShader(const IShader* shader) = 0;
-    virtual void Build() const = 0;
+    virtual void Build() = 0;
     virtual void Activate() const = 0;
+    virtual UniformVariable GetUniformVariable(std::string name) const = 0;
+    virtual void SetUniformVariable(std::string name, Tensor value) const = 0;
+    virtual const std::unordered_map<std::string, UniformVariable>& GetUniformVariables() const = 0;
 
 private:
     IPipeline(const IPipeline& other) = delete;

@@ -17,24 +17,41 @@
 
 #pragma once
 
-#include <Drawable.h>
-#include <WorldObject.h>
+#include <TierGine.CoreDefs.h>
 
 namespace TierGine {
 
-interface ISceneObject :
-    public IDrawable,
-    public IWorldObject
-{
-};
+interface IPipeline;
 
-interface IScene {
-    virtual ~IScene() {}
+class UniformVariable {
+public:
+    enum TUniformType {
+        UT_FLOAT,
+        UT_VEC_2,
+        UT_VEC_3,
+        UT_VEC_4,
+        UT_MAT_2,
+        UT_MAT_3,
+        UT_MAT_4
+    };
 
-    // Takes ownership
-    virtual void Add(std::unique_ptr<ISceneObject>& object) = 0;
-    virtual void Render() = 0;
-    virtual void Update() = 0;
+    UniformVariable(const IPipeline& pipeline, TUniformType type, std::string name) :
+        pipeline(pipeline),
+        type(type),
+        name(name)
+    {}
+    UniformVariable(const UniformVariable& other);
+    UniformVariable(const UniformVariable&& other);
+
+    std::string GetName() const { return name; }
+
+    template <class T>
+    void Set(T& value);
+
+private:
+    const IPipeline& pipeline;
+    TUniformType type;
+    std::string name;
 };
 
 }

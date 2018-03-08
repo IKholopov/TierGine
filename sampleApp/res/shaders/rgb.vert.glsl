@@ -17,12 +17,13 @@
 
 #version 400
 
+uniform float mult;
 layout(location = 0) in vec3 vp;
 layout(location = 1) in vec4 vc;
 
 out vec4 color;
 
 void main() {
-     color = vc;
+     color = 3.5*abs(vc * sin(mult) + vc*cos(mult));
      gl_Position = vec4(vp, 1.0);
 }

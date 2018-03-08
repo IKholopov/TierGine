@@ -16,3 +16,20 @@
 */
 
 #pragma once
+
+#include <TierGine.CoreDefs.h>
+
+class CListener;
+
+interface IObservable {
+    virtual ~IObservable() {}
+    virtual void Unsubscribe(CListener* Listener) = 0;
+};
+
+class CListener {
+    CListener(IObservable& observable) : observable(observable) {}
+    virtual ~CListener() { observable.Unsubscribe(this); }
+
+private:
+    IObservable& observable;
+}

@@ -16,6 +16,8 @@
 */
 
 #include <Tensor.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace TierGine {
 
@@ -24,6 +26,54 @@ Tensor::Tensor(int size, char channels, std::shared_ptr<TierGine::Tensor::DataHo
     size(size),
     channels(channels)
 {
+}
+
+template <>
+Tensor CreateTensor<float>(float& otherImplementation)
+{
+    return CreateTensor<float>(1, 1, { otherImplementation });
+}
+
+template <>
+Tensor CreateTensor<glm::vec2>(glm::vec2& otherImplementation)
+{
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 2, false);
+    return Tensor(1, 2, std::shared_ptr<Tensor::DataHolder>(data));
+}
+
+template <>
+Tensor CreateTensor<glm::vec3>(glm::vec3& otherImplementation)
+{
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 3, false);
+    return Tensor(1, 3, std::shared_ptr<Tensor::DataHolder>(data));
+}
+
+template <>
+Tensor CreateTensor<glm::vec4>(glm::vec4& otherImplementation)
+{
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 4, false);
+    return Tensor(1, 4, std::shared_ptr<Tensor::DataHolder>(data));
+}
+
+template <>
+Tensor CreateTensor<glm::mat2>(glm::mat2& otherImplementation)
+{
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 4, false);
+    return Tensor(2, 2, std::shared_ptr<Tensor::DataHolder>(data));
+}
+
+template <>
+Tensor CreateTensor<glm::mat3>(glm::mat3& otherImplementation)
+{
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 9, false);
+    return Tensor(3, 3, std::shared_ptr<Tensor::DataHolder>(data));
+}
+
+template <>
+Tensor CreateTensor<glm::mat4>(glm::mat4& otherImplementation)
+{
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 16, false);
+    return Tensor(4, 4, std::shared_ptr<Tensor::DataHolder>(data));
 }
 
 }

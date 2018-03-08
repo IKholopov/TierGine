@@ -20,5 +20,6 @@
 #include <TierGine.CoreDefs.h>
 
 interface ILoadableResource {
+    virtual ~ILoadableResource() {}
     virtual void LoadFromPath(std::string path) = 0;
 };

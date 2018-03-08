@@ -24,6 +24,7 @@
 namespace TierGine {
 
 interface IWorldObject {
+    virtual ~IWorldObject() {}
     virtual const glm::mat4x4& GetPositionTransformation() = 0;
     virtual void SetPositionTransformation() = 0;
 };
