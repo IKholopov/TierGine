@@ -1,15 +1,5 @@
-<tiles>
-<empty>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
+<quads>
+<top>
 	0 0 1
 	1 0 1
 	1 1 1
@@ -17,28 +7,17 @@
 	
 	0 0 -1
 	0 0 -1
-	</quad>
-</empty>
+</top>
+<bottom>
+	0 0 0
+	0 1 0
+	1 1 0
+	1 0 0
+	
+	0 0 1
+	0 0 1
+</bottom>
 <back>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
 	0 0 0
 	0 0 1
 	0 1 1
@@ -46,28 +25,8 @@
 
 	1 0 0
 	1 0 0
-	</quad>
 </back>
 <front>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
 	1 0 0
 	1 1 0
 	1 1 1
@@ -75,57 +34,17 @@
 
 	-1 0 0
 	-1 0 0
-	</quad>
 </front>
 <left>
-	<quad>
 	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 0 0
-	1 0 0
+	1 0 0 
 	1 0 1
 	0 0 1
 
 	0 1 0
 	0 1 0
-	</quad>
 </left>
 <right>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
 	0 1 0
 	0 1 1
 	1 1 1
@@ -133,180 +52,8 @@
 
 	0 -1 0
 	0 -1 0
-	</quad>
 </right>
-<rightfront>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 1 0
-	0 1 1
-	1 1 1
-	1 1 0
-
-	0 -1 0
-	0 -1 0
-	</quad>
-	<quad>
-	1 0 0
-	1 1 0
-	1 1 1
-	1 0 1
-
-	-1 0 0
-	-1 0 0
-	</quad>
-</rightfront>
-<leftfront>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 0 0
-	1 0 0
-	1 0 1
-	0 0 1
-
-	0 1 0
-	0 1 0
-	</quad>
-	<quad>
-	1 0 0
-	1 1 0
-	1 1 1
-	1 0 1
-
-	-1 0 0
-	-1 0 0
-	</quad>
-</leftfront>
-<rightback>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 1 0
-	0 1 1
-	1 1 1
-	1 1 0
-
-	0 -1 0
-	0 -1 0
-	</quad>
-	<quad>
-	0 0 0
-	0 0 1
-	0 1 1
-	0 1 0
-
-	1 0 0
-	1 0 0
-	</quad>
-</rightback>
-<leftback>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 0 0
-	1 0 0
-	1 0 1
-	0 0 1
-
-	0 1 0
-	0 1 0
-	</quad>
-	<quad>
-	0 0 0
-	0 0 1
-	0 1 1
-	0 1 0
-
-	1 0 0
-	1 0 0
-	</quad>
-</leftback>
 <backout>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
 	0 0 0
 	0 1 0
 	0 1 1
@@ -314,57 +61,17 @@
 
 	-1 0 0
 	-1 0 0
-	</quad>
 </backout>
 <frontout>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
 	1 0 0
 	1 0 1
 	1 1 1
-	1 1 0
+	1 1 0 
 
 	1 0 0
 	1 0 0
-	</quad>
 </frontout>
 <leftout>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
 	0 0 0
 	0 0 1
 	1 0 1
@@ -372,197 +79,97 @@
 
 	0 -1 0
 	0 -1 0
-	</quad>
 </leftout>
 <rightout>
-	<quad>
-	0 0 0
 	0 1 0
 	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
 	1 1 1
 	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 1 0
-	0 1 1
-	1 1 1
-	1 1 0
 
-	0 -1 0
-	0 -1 0
-	</quad>
+	0 1 0
+	0 1 0
 </rightout>
+</quads>
+<tiles>
+<empty>
+<top/><bottom/>
+</empty>
+<back>
+<top/><bottom/><back/>
+</back>
+<front>
+<top/><bottom/><front/>
+</front>
+<left>
+<top/><bottom/><left/>
+</left>
+<right>
+<top/><bottom/><right/>
+</right>
 <rightfront>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 1 0
-	0 1 1
-	1 1 1
-	1 1 0
-
-	0 -1 0
-	0 -1 0
-	</quad>
-	<quad>
-	1 0 0
-	1 1 0
-	1 1 1
-	1 0 1
-
-	-1 0 0
-	-1 0 0
-	</quad>
+<top/><bottom/><right/><front/>
 </rightfront>
 <leftfront>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 0 0
-	1 0 0
-	1 0 1
-	0 0 1
-
-	0 1 0
-	0 1 0
-	</quad>
-	<quad>
-	1 0 0
-	1 1 0
-	1 1 1
-	1 0 1
-
-	-1 0 0
-	-1 0 0
-	</quad>
+<top/><bottom/><left/><front/>
 </leftfront>
 <rightback>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 1 0
-	0 1 1
-	1 1 1
-	1 1 0
-
-	0 -1 0
-	0 -1 0
-	</quad>
-	<quad>
-	0 0 0
-	0 0 1
-	0 1 1
-	0 1 0
-
-	1 0 0
-	1 0 0
-	</quad>
+<top/><bottom/><right/><back/>
 </rightback>
 <leftback>
-	<quad>
-	0 0 0
-	0 1 0
-	1 1 0
-	1 0 0
-	
-	0 0 1
-	0 0 1
-	</quad>
-	<quad>
-	0 0 1
-	1 0 1
-	1 1 1
-	0 1 1
-	
-	0 0 -1
-	0 0 -1
-	</quad>
-	<quad>
-	0 0 0
-	1 0 0
-	1 0 1
-	0 0 1
-
-	0 1 0
-	0 1 0
-	</quad>
-	<quad>
-	0 0 0
-	0 0 1
-	0 1 1
-	0 1 0
-
-	1 0 0
-	1 0 0
-	</quad>
+<top/><bottom/><left/><back/>
 </leftback>
+<outback>
+<backout/>
+</outback>
+<outfront>
+<frontout/>
+</outfront>
+<outleft>
+<leftout/>
+</outleft>
+<outright>
+<rightout/>
+</outright>
+<outbackleft>
+<backout/><leftout/>
+</outbackleft>
+<outbackright>
+<backout/><rightout/>
+</outbackright>
+<outbackfront>
+<backout/><frontout/>
+</outbackfront>
+<outleftright>
+<leftout/><rightout/>
+<outleftright/>
+<outleftfront>
+<leftout/><frontout/>
+<outleftfront/>
+<outrightfront>
+<rightout/><frontout/>
+<outrightfront/>
+<outrightfrontleft>
+<rightout/><frontout/><leftout/>
+<outrightfrontleft/>
+<outrightbackleft>
+<rightout/><backout/><leftout/>
+<outrightbackleft/>
+<outfrontbackleft>
+<frontout/><backout/><leftout/>
+<outfrontbackleft/>
+<outfrontbackright>
+<frontout/><backout/><rightout/>
+<outfrontbackright/>
 </tiles>
 <map>
 <size>
-5 5
+7 7
 </size>
-<leftfront/><front/><front/><front/><rightfront/>
-<left/>     <empty/><empty/><empty/><right/>
-<left/>     <empty/><empty/><empty/><right/>
-<left/>     <empty/><empty/><empty/><right/>
-<leftback/> <back/> <back/> <back/> <rightback/>
+<leftfront/><w/>	<front/><w/><outrightbackleft/><b/> <front/><w/>       <outleftright/><b/><front/><w/>	          <outbackleft/><b/>
+<left/><w/>    		<empty/><w/><empty/><w/>            <empty/><w/>       <outleftright/><b/><empty/><w/>	          <right/><w/>
+<left/><w/>    		<empty/><w/><outrightfrontleft/><b/><empty/><w/>       <outleft/><b/>     <outfrontbackright/><b/><right/><w/>
+<outfrontbackright/><b/><empty/><w/><outleftright/><b/>	    <empty/><w/>       <outleftright/><b/><empty/><w/>		  <right/><w/>
+<left/><w/>    		<empty/><w/><outbackleft/><b/>	    <outbackfront/><b/><outbackright/><b/><empty/><w/>	      	  <right/><w/>
+<left/><w/>    		<empty/><w/><empty/><w/>	    <empty/><w/>       <empty/><w/>       <empty/><w/>	      	  <right/><w/>
+<outrightfront/><b/>    <back/><w/> <back/><w/> 	    <back/><w/>        <back/><w/>	  <back/><w/> 	      	  <rightback/><w/>
 </map>

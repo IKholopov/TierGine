@@ -19,7 +19,7 @@
 namespace TierGine {
 
 SimpleScene::SimpleScene(const ICamera& camera, IPipeline& defaultPipeline) :
-    camera(camera),
+    camera(&camera),
     defaultPipeline(defaultPipeline),
     activePipeline(nullptr),
     pipelineInitialized(false)
@@ -48,7 +48,7 @@ void SimpleScene::Render()
             activatePipeline(&defaultPipeline);
         }
         if(!pipelineInitialized) {
-            const TierGine::CameraData projections = camera.GetCameraProjections();
+            const TierGine::CameraData projections = camera->GetCameraProjections();
             cameraView.Set(projections.View);
             cameraProjection.Set(projections.Projection);
             pipelineInitialized = true;

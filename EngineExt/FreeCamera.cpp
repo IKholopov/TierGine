@@ -27,7 +27,7 @@ FreeCamera::FreeCamera():
     position(glm::vec3(0.0f, 0.0f, 0.0f)),
     direction(glm::vec2(0.0f, M_PI_2)),
     fov(60.0f),
-    ratio(4.0f/3.0f),
+    ratio(16.0f/9.0f),
     nearClipping(0.1f),
     farClipping(100.0f)
 {

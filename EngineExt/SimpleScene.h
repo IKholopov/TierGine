@@ -31,6 +31,8 @@ public:
 
     SimpleScene(const ICamera& camera, IPipeline& defaultPipeline);
 
+    void SetCamera(const ICamera* camera) { this->camera = camera; }
+
     // IScene interface
     virtual void Add(std::unique_ptr<ISceneObject>& object) override;
     virtual void Render() override;
@@ -41,7 +43,7 @@ private:
     UniformVariable cameraProjection;
     UniformVariable cameraView;
     UniformVariable modelPosition;
-    const ICamera& camera;
+    const ICamera* camera;
     IPipeline& defaultPipeline;
     IPipeline* activePipeline;
     bool pipelineInitialized;

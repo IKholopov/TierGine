@@ -26,6 +26,6 @@ layout(location = 1) in vec3 vc;
 out vec4 color;
 
 void main() {
-     color = vec4(vc, 1.0) + 1.5*vec4(abs(vc), 1.0);
+     color = 0.5*vec4(vc, 1.0) + vec4(0.5);
      gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp, 1.0);
 }

@@ -16,21 +16,32 @@
 */
 #pragma once
 
-#include <Scene.h>
-#include <Camera.h>
+#include <SimpleScene.h>
+#include <BasicFpsCamera.h>
 #include <fstream>
 #include <unordered_map>
 
 namespace TG = TierGine;
+
+class CollisionFilter : public TG::IMovementFilter {
+public:
+      CollisionFilter(std::vector<std::vector<bool>> collision) :
+          collision(collision) {}
+
+      virtual glm::vec3 FilterPosition(glm::vec3& pos, const glm::vec3& prevPos) override;
+private:
+      std::vector<std::vector<bool>> collision;
+};
 
 class MazeSceneBuilder {
 public:
     constexpr static const char* const BlockName = "block";
 
     MazeSceneBuilder(std::string path);
-    TG::IScene* CreateScene(TG::IContext& context,
+    TG::SimpleScene* CreateScene(TG::IContext& context,
                             const TG::ICamera& camera,
                             TierGine::IPipeline& defaultPipeline);
+    CollisionFilter* CreateCollisionFilter();
 
 private:
     struct Quad {
@@ -39,15 +50,17 @@ private:
     };
 
     struct Tile {
-        std::vector<Quad> Quads;
+        std::vector<Quad*> Quads;
     };
-
+    std::unordered_map<std::string, std::unique_ptr<Quad>> quads;
     std::unordered_map<std::string, std::unique_ptr<Tile>> tiles;
     std::vector<std::vector<std::string>> map;
+    std::vector<std::vector<bool>> collision;
     int width, height;
 
+    void processQuads(std::ifstream& file);
     void processTiles(std::ifstream& file);
     bool processTile(std::ifstream& file);
     void processMap(std::ifstream& file);
-    bool processQuad(std::ifstream& file, MazeSceneBuilder::Quad& quad);
+    bool processQuad(std::ifstream& file);
 };

@@ -60,6 +60,7 @@ struct BasicFpsCamera::OnLeft: public InputListener {
 };
 
 BasicFpsCamera::BasicFpsCamera():
+    filter(nullptr),
     speed(0.1f),
     previousX(0),
     previousY(0),
@@ -79,6 +80,11 @@ void BasicFpsCamera::BindToInputProvider(InputProvider& provider)
     provider.AddKeyListener(GLFW_KEY_D, listeners.rbegin()->get());
     listeners.push_back(std::make_unique<OnLeft>(provider, *this));
     provider.AddKeyListener(GLFW_KEY_A, listeners.rbegin()->get());
+}
+
+void BasicFpsCamera::UnbindFromInput()
+{
+    listeners.clear();
 }
 
 void BasicFpsCamera::OnMouseMove::OnMouse(double x, double y)
@@ -117,6 +123,9 @@ void BasicFpsCamera::OnForward::OnKey(int action)
     float& phi = direction[0];
     float& theta = direction[1];
     position += camera.speed*glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
+    if(camera.filter != nullptr) {
+        position = camera.filter->FilterPosition(position, camera.cameraView.GetPosition());
+    }
     camera.cameraView.SetPosition(position);
 }
 
@@ -127,6 +136,9 @@ void BasicFpsCamera::OnBackward::OnKey(int action)
     float& phi = direction[0];
     float& theta = direction[1];
     position -= camera.speed*glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
+    if(camera.filter != nullptr) {
+        position = camera.filter->FilterPosition(position, camera.cameraView.GetPosition());
+    }
     camera.cameraView.SetPosition(position);
 }
 
@@ -136,8 +148,10 @@ void BasicFpsCamera::OnRight::OnKey(int action)
     glm::vec2 direction = camera.cameraView.GetDirection();
     float& phi = direction[0];
     phi += M_PI_2;
-    float& theta = direction[1];
     position += camera.speed*glm::vec3(cos(phi), 0.0f, sin(phi));
+    if(camera.filter != nullptr) {
+        position = camera.filter->FilterPosition(position, camera.cameraView.GetPosition());
+    }
     camera.cameraView.SetPosition(position);
 }
 
@@ -147,8 +161,10 @@ void BasicFpsCamera::OnLeft::OnKey(int action)
     glm::vec2 direction = camera.cameraView.GetDirection();
     float& phi = direction[0];
     phi += M_PI_2;
-    float& theta = direction[1];
     position -= camera.speed*glm::vec3(cos(phi), 0.0f, sin(phi));
+    if(camera.filter != nullptr) {
+        position = camera.filter->FilterPosition(position, camera.cameraView.GetPosition());
+    }
     camera.cameraView.SetPosition(position);
 }
 

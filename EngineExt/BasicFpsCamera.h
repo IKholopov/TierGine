@@ -23,14 +23,21 @@
 
 namespace TierGine {
 
+interface IMovementFilter {
+    virtual glm::vec3 FilterPosition(glm::vec3& pos, const glm::vec3& prevPos) = 0;
+};
+
 class BasicFpsCamera {
 public:
     BasicFpsCamera();
-    const ICamera& GetCamera() { return cameraView; }
+    ICamera& GetCamera() { return cameraView; }
+    void SetMovementFilter(IMovementFilter* filter) { this->filter = filter; }
     void BindToInputProvider(InputProvider& provider);
+    void UnbindFromInput();
 
 private:
     FreeCamera cameraView;
+    IMovementFilter* filter;
     float speed;
     int previousX;
     int previousY;
