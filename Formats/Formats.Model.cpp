@@ -14,27 +14,25 @@
    limitations under the License.
    ==============================================================================
 */
+#include <Formats.Model.h>
 
-#pragma once
-#include <Shader.h>
-#include <Pipeline.h>
-#include <Mesh.h>
+#include <EngineException.h>
+#include <Format.Model.Obj.h>
+#include <algorithm>
 
 namespace TierGine {
 
-interface IContext {
-    virtual ~IContext() {}
-
-    virtual IPipeline* CreatePipeline() = 0;
-    virtual void DeletePipeline(IPipeline* pipeline) = 0;
-
-    virtual IShader* CreateShader(IShader::Type shaderType) = 0;
-    virtual void BindShader(const IShader* shader, IPipeline* pipeline) = 0;
-    virtual void DeleteShader(IShader* shader) = 0;
-    virtual TG_Status Activate() = 0;
-
-    virtual IMesh* CreateMesh() = 0;
-    virtual void DeleteMesh(const IMesh* mesh) = 0;
-};
+std::unique_ptr<TierGine::IMeshLoader> Formats::GetLoaderFor(std::string path)
+{
+    std::string ext = path.substr(path.find_last_of(".") + 1);
+    if(ext.size() == 0) {
+        throw EngineException("Cannot determing extension of path: " + path);
+    }
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    if(ext.compare("obj") == 0) {
+        return std::make_unique<Formats::ModelObjLoader>(path);
+    }
+    throw EngineException("Cannot open file of format: " + ext + "\nPath: " + path);
+}
 
 }

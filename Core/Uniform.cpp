@@ -25,49 +25,57 @@ namespace TierGine {
 template<>
 void UniformVariable::Set<Tensor>(Tensor& value)
 {
-    pipeline.SetUniformVariable(name, value);
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, value);
 }
 
 template<>
 void UniformVariable::Set<float>(float& value)
 {
-    pipeline.SetUniformVariable(name, CreateTensor(value));
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
 void UniformVariable::Set<glm::vec2>(glm::vec2& value)
 {
-    pipeline.SetUniformVariable(name, CreateTensor(value));
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
 void UniformVariable::Set<glm::vec3>(glm::vec3& value)
 {
-    pipeline.SetUniformVariable(name, CreateTensor(value));
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
 void UniformVariable::Set<glm::vec4>(glm::vec4& value)
 {
-    pipeline.SetUniformVariable(name, CreateTensor(value));
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
 void UniformVariable::Set<glm::mat2>(glm::mat2& value)
 {
-    pipeline.SetUniformVariable(name, CreateTensor(value));
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
 void UniformVariable::Set<glm::mat3>(glm::mat3& value)
 {
-    pipeline.SetUniformVariable(name, CreateTensor(value));
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
-void UniformVariable::Set<glm::mat4>(glm::mat4& value)
+void UniformVariable::Set<const glm::mat4>(const glm::mat4& value)
 {
-    pipeline.SetUniformVariable(name, CreateTensor(value));
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 UniformVariable::UniformVariable(const UniformVariable& other) :
@@ -77,11 +85,38 @@ UniformVariable::UniformVariable(const UniformVariable& other) :
 {
 }
 
+UniformVariable::UniformVariable():
+    pipeline(nullptr),
+    type(UT_INVALID)
+{
+
+}
+
 UniformVariable::UniformVariable(const UniformVariable&& other) :
     pipeline(other.pipeline),
     type(other.type),
     name(other.name)
 {
+}
+
+UniformVariable& UniformVariable::operator=(const UniformVariable& other)
+{
+    if(&other != this) {
+        pipeline = other.pipeline;
+        type = other.type;
+        name = other.name;
+    }
+    return *this;
+}
+
+UniformVariable& UniformVariable::operator=(const UniformVariable&& other)
+{
+    if(&other != this) {
+        pipeline = other.pipeline;
+        type = other.type;
+        name = other.name;
+    }
+    return *this;
 }
 
 }

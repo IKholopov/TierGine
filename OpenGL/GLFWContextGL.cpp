@@ -65,4 +65,18 @@ void GLFWContextGL::DeleteShader(IShader* shader)
     shaders.erase(storedShader);
 }
 
+IMesh* GLFWContextGL::CreateMesh()
+{
+    GLMesh* mesh = new GLMesh(*this);
+    meshes.insert({mesh, nullptr}).first->second.reset(mesh);
+    return mesh;
+}
+
+void GLFWContextGL::DeleteMesh(const IMesh* mesh)
+{
+    auto storedMesh = meshes.find(mesh);
+    assert(storedMesh != meshes.end());
+    meshes.erase(storedMesh);
+}
+
 }

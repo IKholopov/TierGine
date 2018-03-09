@@ -18,12 +18,15 @@
 #version 400
 
 uniform float mult;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 layout(location = 0) in vec3 vp;
-layout(location = 1) in vec4 vc;
+layout(location = 1) in vec3 vc;
 
 out vec4 color;
 
 void main() {
-     color = 3.5*abs(vc * sin(mult) + vc*cos(mult));
-     gl_Position = vec4(vp, 1.0);
+     color = (0.5*sin(mult))*vec4(vc, 1.0) + 0.8*vec4(abs(vc), 1.0);
+     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp, 1.0);
 }

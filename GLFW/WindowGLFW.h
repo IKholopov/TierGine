@@ -17,12 +17,14 @@
 
 #pragma once
 
-#include <assert.h>
-
 #include <Context.h>
 #include <Window.h>
 #include <Initializable.h>
+#include <InputProvider.h>
 #include <GLFW/glfw3.h>
+#include <assert.h>
+#include <mutex>
+
 
 namespace TierGine {
 
@@ -66,25 +68,37 @@ public:
     // Takes ownership of context
     WindowGLFW(const Config& config, IContext* context);
     WindowGLFW(const Config& config, const WindowGLFW& otherContext);
+    ~WindowGLFW();
 
     std::unique_ptr<Initializer> GetContextInitializer();
     std::unique_ptr<Initializer> GetNoContextInitializer();
     GLFWwindow* GetWindow() const { return window; }
 
     // IWindow interface
-    virtual void Resize(int width, int height) override {} //TODO
-    virtual void Move(int x, int y) override {} //TODO
-    virtual void Fullscreen() override {} //TODO
-    virtual void Update() const override;
+    virtual void Resize(int width, int height) override;
+    virtual void Move(int x, int y) override;
+    virtual void Fullscreen() override;
+    virtual void Update() override;
     virtual bool ToClose() const override { assert(window); return glfwWindowShouldClose(window); }
 
     TG_Status Create(bool useContext);
     IContext* GetContext() const { return context.get(); }
+    InputProvider& GetInputProvider() { return inputManager; }
+    void Close();
 
 private:
     Config config;
+    InputProvider inputManager;
     std::shared_ptr<IContext> context;
     GLFWwindow* window;
+    std::vector<std::unique_ptr<InputListener>> inputListeners;
+
+    static void mouseCallback(GLFWwindow* window, double x, double y);
+    static std::mutex windowCritical;
+    static std::unordered_map<GLFWwindow*, WindowGLFW*> windows;
+
+    struct OnFullScreen;
+    struct OnExit;
 };
 
 }

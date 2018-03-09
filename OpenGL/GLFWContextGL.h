@@ -26,6 +26,7 @@
 #include <WindowGLFW.h>
 #include <GLShader.h>
 #include <GLProgram.h>
+#include <GLMesh.h>
 
 namespace TierGine {
 
@@ -43,10 +44,14 @@ public:
     virtual void BindShader(const IShader* shader, IPipeline* pipeline) override;
     virtual void DeleteShader(IShader* shader) override;
 
+    virtual IMesh* CreateMesh() override;
+    virtual void DeleteMesh(const IMesh* mesh) override;
+
 private:
     WindowGLFW& window;
     std::unordered_map<const IShader*, std::unique_ptr<GLShader>> shaders;
     std::unordered_map<const IPipeline*, std::unique_ptr<GLProgram>> pipelines;
+    std::unordered_map<const IMesh*, std::unique_ptr<GLMesh>> meshes;
 };
 
 }

@@ -90,7 +90,7 @@ void GLProgram::Build()
         glGetActiveUniform(programId, (GLuint)i, bufSize, &length, &size, &type, name);
         UniformVariable::TUniformType uniformType = GetUniformType(type);
         std::string strName(static_cast<char*>(name));
-        auto var = UniformVariable(*this, uniformType, strName);
+        auto var = UniformVariable(this, uniformType, strName);
         uniforms.insert({strName, std::move(var)});
     }
 }

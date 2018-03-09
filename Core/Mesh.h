@@ -19,11 +19,18 @@
 
 #include <Tensor.h>
 #include <LoadableResource.h>
+#include <Drawable.h>
 
 namespace TierGine {
 
+interface IContext;
+
 interface IMesh : public ILoadableResource {
-    virtual void AddAtribute(int id, Tensor value) = 0;
+    virtual int Size() const = 0;
+    virtual const IRenderer& GetRenderer() const = 0;
+    virtual const IContext& GetContext() const = 0;
+
+    virtual void AddAtribute(int id, const Tensor& value) = 0;
     virtual void Bind() const = 0;
 };
 

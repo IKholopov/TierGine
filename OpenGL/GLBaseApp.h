@@ -36,10 +36,12 @@ public:
     }
 
 protected:
-    virtual TG_Status MainLoop() override { window.Update(); return TG_Ok; }
+    virtual TG_Status MainLoop() override
+    { window.Update(); glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);return TG_Ok; }
     virtual bool ShouldTerminate() const override { return window.ToClose(); }
 
     IContext* GetContext() const { return window.GetContext(); }
+    InputProvider& GetInputProvider() { return window.GetInputProvider(); }
 
 private:
     TierGine::WindowGLFW window;

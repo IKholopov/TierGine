@@ -25,12 +25,14 @@ namespace TierGine {
 
 class Tensor {
 public:
+    enum Type { T_BOOL, T_BYTE, T_UBYTE, T_SHORT, T_USHORT, T_INT, T_UINT, T_FLOAT, T_DOUBLE };
     interface DataHolder {
         virtual ~DataHolder() {}
 
-        virtual void* GetRawAddress() = 0;
+        virtual const void* GetRawAddress() = 0;
         virtual int GetTypeSize() const = 0;
         virtual int GetLength() const = 0;
+        virtual Type GetType() const = 0;
     };
 
     Tensor(int size, char channels, std::shared_ptr<DataHolder> data);
@@ -39,9 +41,10 @@ public:
     Tensor(Tensor&& other) = default;
     Tensor& operator=(Tensor&& other) = default;
 
-    void* GetRawPointer() const { return data->GetRawAddress(); }
+    const void* GetRawPointer() const { return data->GetRawAddress(); }
     int GetSize() const { return size; }
     char GetChannels() const { return channels; }
+    Type GetType() const { return data->GetType(); }
 
 private:
     std::shared_ptr<DataHolder> data;
@@ -66,9 +69,10 @@ public:
     ~TensorData() { if(owner) { delete data;  } }
 
     // DataHolder interface
-    virtual void* GetRawAddress() override { return static_cast<void*>(data); }
+    virtual const void* GetRawAddress() override { return static_cast<const void*>(data); }
     virtual int GetTypeSize() const override { return sizeof(T); }
     virtual int GetLength() const override { return length; }
+    virtual Tensor::Type GetType() const override;
 
 private:
     const int length;
@@ -102,7 +106,7 @@ Tensor CreateTensor(int size, int channels, std::initializer_list<T> values)
 }
 
 template <typename T>
-Tensor CreateTensor(T& otherImplementation);
+Tensor CreateTensor(const T& otherImplementation);
 
 template<typename T>
 void TensorData<T>::allocData()

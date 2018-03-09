@@ -18,6 +18,7 @@
 #pragma once
 
 #include <TierGine.CoreDefs.h>
+#include <assert.h>
 
 namespace TierGine {
 
@@ -32,24 +33,30 @@ public:
         UT_VEC_4,
         UT_MAT_2,
         UT_MAT_3,
-        UT_MAT_4
+        UT_MAT_4,
+        UT_INVALID
     };
 
-    UniformVariable(const IPipeline& pipeline, TUniformType type, std::string name) :
+    UniformVariable();
+
+    UniformVariable(IPipeline* pipeline, TUniformType type, std::string name) :
         pipeline(pipeline),
         type(type),
         name(name)
-    {}
+    { assert(pipeline != nullptr); }
     UniformVariable(const UniformVariable& other);
     UniformVariable(const UniformVariable&& other);
+    UniformVariable& operator=(const UniformVariable& other);
+    UniformVariable& operator=(const UniformVariable&& other);
 
     std::string GetName() const { return name; }
+    bool IsValid() const { return type != UT_INVALID; }
 
     template <class T>
     void Set(T& value);
 
 private:
-    const IPipeline& pipeline;
+    IPipeline* pipeline;
     TUniformType type;
     std::string name;
 };

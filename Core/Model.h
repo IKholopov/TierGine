@@ -23,7 +23,6 @@
 namespace TierGine {
 
 interface IModel :
-    public IMesh,
     public ISceneObject,
     public ILoadableResource
 {

@@ -16,25 +16,26 @@
 */
 
 #pragma once
-#include <Shader.h>
-#include <Pipeline.h>
-#include <Mesh.h>
+
+#include <Initializable.h>
+#include <mutex>
 
 namespace TierGine {
 
-interface IContext {
-    virtual ~IContext() {}
+class GLDebugInitializer : public IInitializable {
+public:
+    // IInitializable interface
+    virtual bool Initialize() override;
+    virtual bool InitializeThread() override;
+    virtual void Deinitialize() override {}
+    virtual void DeinitializeThread() override {}
+    virtual bool IsInitialized() override;
+    virtual bool IsInitializedOnThread() override { return initializedThread; }
 
-    virtual IPipeline* CreatePipeline() = 0;
-    virtual void DeletePipeline(IPipeline* pipeline) = 0;
-
-    virtual IShader* CreateShader(IShader::Type shaderType) = 0;
-    virtual void BindShader(const IShader* shader, IPipeline* pipeline) = 0;
-    virtual void DeleteShader(IShader* shader) = 0;
-    virtual TG_Status Activate() = 0;
-
-    virtual IMesh* CreateMesh() = 0;
-    virtual void DeleteMesh(const IMesh* mesh) = 0;
+private:
+    static std::mutex critical;
+    static bool initialized;
+    thread_local static bool initializedThread;
 };
 
 }

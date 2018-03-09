@@ -27,9 +27,20 @@ enum TRenderingMode {
     RM_POINTS
 };
 
+enum TPolygonRenderStyle {
+    PRS_FRONT,
+    PRS_BACK,
+    PRS_BOTH
+};
+
+interface IRenderer {
+    virtual ~IRenderer() {}
+    virtual void RenderWithMode(TRenderingMode mode, TPolygonRenderStyle style) const = 0;
+};
+
 interface IDrawable {
     virtual ~IDrawable() {}
-    virtual void SetRenderingMode(TRenderingMode mode) = 0;
+    virtual void SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style) = 0;
     virtual void Draw() = 0;
 };
 

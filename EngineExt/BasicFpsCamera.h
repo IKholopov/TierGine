@@ -14,27 +14,34 @@
    limitations under the License.
    ==============================================================================
 */
-
 #pragma once
-#include <Shader.h>
-#include <Pipeline.h>
-#include <Mesh.h>
+
+#include <FreeCamera.h>
+
+#include <InputProvider.h>
+#include <vector>
 
 namespace TierGine {
 
-interface IContext {
-    virtual ~IContext() {}
+class BasicFpsCamera {
+public:
+    BasicFpsCamera();
+    const ICamera& GetCamera() { return cameraView; }
+    void BindToInputProvider(InputProvider& provider);
 
-    virtual IPipeline* CreatePipeline() = 0;
-    virtual void DeletePipeline(IPipeline* pipeline) = 0;
+private:
+    FreeCamera cameraView;
+    float speed;
+    int previousX;
+    int previousY;
+    bool initialized;
+    std::vector<std::unique_ptr<InputListener>> listeners;
 
-    virtual IShader* CreateShader(IShader::Type shaderType) = 0;
-    virtual void BindShader(const IShader* shader, IPipeline* pipeline) = 0;
-    virtual void DeleteShader(IShader* shader) = 0;
-    virtual TG_Status Activate() = 0;
-
-    virtual IMesh* CreateMesh() = 0;
-    virtual void DeleteMesh(const IMesh* mesh) = 0;
+    struct OnMouseMove;
+    struct OnForward;
+    struct OnBackward;
+    struct OnRight;
+    struct OnLeft;
 };
 
 }

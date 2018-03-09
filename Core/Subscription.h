@@ -19,17 +19,23 @@
 
 #include <TierGine.CoreDefs.h>
 
-class CListener;
+namespace TierGine {
+
+class Listener;
 
 interface IObservable {
     virtual ~IObservable() {}
-    virtual void Unsubscribe(CListener* Listener) = 0;
+    virtual void Unsubscribe(Listener* listener) = 0;
 };
 
-class CListener {
-    CListener(IObservable& observable) : observable(observable) {}
-    virtual ~CListener() { observable.Unsubscribe(this); }
+class Listener {
+public:
+    Listener(IObservable& observable) : observable(observable) {}
+    virtual ~Listener() { observable.Unsubscribe(this); }
 
 private:
     IObservable& observable;
+};
+
+
 }

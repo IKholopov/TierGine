@@ -25,8 +25,20 @@ namespace TierGine {
 
 interface IWorldObject {
     virtual ~IWorldObject() {}
-    virtual const glm::mat4x4& GetPositionTransformation() = 0;
-    virtual void SetPositionTransformation() = 0;
+    virtual const glm::mat4x4 GetPositionTransformation() const = 0;
+    virtual const glm::vec3& GetPosition() const = 0;
+    void SetPosition(std::initializer_list<float> position);
+    virtual void SetPosition(const glm::vec3& position) = 0;
 };
+
+
+inline void IWorldObject::SetPosition(std::initializer_list<float> position) {
+    assert(position.size() == 3);
+    glm::vec3 pos;
+    for(int i = 0; i < 3; ++i) {
+        pos[i] = *(position.begin()+i);
+    }
+    SetPosition(pos);
+}
 
 }
