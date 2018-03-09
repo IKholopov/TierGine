@@ -15,35 +15,17 @@
    ==============================================================================
 */
 
-#pragma once
+#version 400
 
-#include <Pipeline.h>
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+layout(location = 0) in vec3 vp;
+layout(location = 1) in vec3 vc;
 
-namespace TierGine {
+out vec4 color;
 
-enum TRenderingMode {
-    RM_FILL,
-    RM_WIRE,
-    RM_POINTS
-};
-
-enum TPolygonRenderStyle {
-    PRS_FRONT,
-    PRS_BACK,
-    PRS_BOTH
-};
-
-interface IRenderer {
-    virtual ~IRenderer() {}
-    virtual void RenderWithMode(TRenderingMode mode, TPolygonRenderStyle style) const = 0;
-};
-
-interface IDrawable {
-    virtual ~IDrawable() {}
-    virtual IPipeline* GetPipeline() const = 0;
-    virtual void SetPipeline(IPipeline* pipeline) = 0;
-    virtual void SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style) = 0;
-    virtual void Draw() = 0;
-};
-
+void main() {
+     color = vec4(vc, 1.0) + 1.5*vec4(abs(vc), 1.0);
+     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp, 1.0);
 }

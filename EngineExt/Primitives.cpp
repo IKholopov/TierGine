@@ -19,7 +19,7 @@
 
 namespace TierGine {
 
-BasicModel Primitives::CreateCubeMesh(TierGine::IContext& context, float size)
+IMesh* Primitives::CreateCubeMesh(TierGine::IContext& context, float size)
 {
     IMesh* mesh = context.CreateMesh();
     Tensor vertices = CreateTensor(3*2*6, 3, {
@@ -112,7 +112,7 @@ BasicModel Primitives::CreateCubeMesh(TierGine::IContext& context, float size)
                                     });
     mesh->AddAtribute(0, vertices);
     mesh->AddAtribute(1, normals);
-    return BasicModel(*mesh);
+    return mesh;
 }
 
 }

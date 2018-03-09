@@ -25,10 +25,20 @@ namespace TierGine {
 
 interface IWorldObject {
     virtual ~IWorldObject() {}
+
     virtual const glm::mat4x4 GetPositionTransformation() const = 0;
-    virtual const glm::vec3& GetPosition() const = 0;
+
+    virtual const glm::vec3 GetPosition() const = 0;
     void SetPosition(std::initializer_list<float> position);
     virtual void SetPosition(const glm::vec3& position) = 0;
+
+    virtual const glm::vec3 GetRotation() const = 0;
+    void SetRotation(std::initializer_list<float> rotation);
+    virtual void SetRotation(const glm::vec3& rotation) = 0;
+
+    virtual const glm::vec3 GetScale() const = 0;
+    void SetScale(std::initializer_list<float> scale);
+    virtual void SetScale(const glm::vec3& scale) = 0;
 };
 
 
@@ -39,6 +49,26 @@ inline void IWorldObject::SetPosition(std::initializer_list<float> position) {
         pos[i] = *(position.begin()+i);
     }
     SetPosition(pos);
+}
+
+inline void IWorldObject::SetRotation(std::initializer_list<float> rotation)
+{
+    assert(rotation.size() == 3);
+    glm::vec3 rot;
+    for(int i = 0; i < 3; ++i) {
+        rot[i] = *(rotation.begin()+i);
+    }
+    SetRotation(rot);
+}
+
+inline void IWorldObject::SetScale(std::initializer_list<float> scale)
+{
+    assert(scale.size() == 3);
+    glm::vec3 scl;
+    for(int i = 0; i < 3; ++i) {
+        scl[i] = *(scale.begin()+i);
+    }
+    SetScale(scl);
 }
 
 }

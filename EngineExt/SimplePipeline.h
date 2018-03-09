@@ -29,6 +29,8 @@ public:
     SimplePipeline(IContext& context, std::string vertexShaderPath,
                    std::string fragmentShaderPath);
 
+    IPipeline* GetPipeline() { return pipeline; }
+
     // IPipeline interface
     virtual IContext& GetContext() const override { return pipeline->GetContext(); }
     virtual void BindShader(const IShader* shader) override { GetContext().BindShader(shader, pipeline); }

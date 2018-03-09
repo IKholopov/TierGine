@@ -16,31 +16,55 @@
 */
 #include <BasicModel.h>
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 namespace TierGine {
 
-BasicModel::BasicModel(IMesh& mesh, glm::vec3 position, TRenderingMode mode,
+BasicModel::BasicModel(IMesh& mesh, glm::vec3 position, glm::vec3 rotation,
+                       glm::vec3 scale,
+                       TRenderingMode mode,
                        TPolygonRenderStyle style) :
     mat(glm::translate(glm::mat4(1.0f), position)),
     position(position),
+    rotation(rotation),
+    scale(scale),
     mode(mode),
     style(style),
-    mesh(mesh)
+    mesh(mesh),
+    pipeline(nullptr)
 {
+    updateMat();
 }
 
 BasicModel::BasicModel(const BasicModel&& other):
     mat(other.mat),
     position(other.position),
+    rotation(other.rotation),
+    scale(other.scale),
     mode(other.mode),
     style(other.style),
-    mesh(other.mesh)
+    mesh(other.mesh),
+    pipeline(other.pipeline)
 {
 }
 
 void BasicModel::SetPosition(const glm::vec3& position)
 {
     this->position = position;
-    mat=glm::translate(glm::mat4(1.0f), position);
+    updateMat();
+}
+
+void BasicModel::SetRotation(const glm::vec3& rotation)
+{
+    this->rotation = rotation;
+    updateMat();
+}
+
+void BasicModel::SetScale(const glm::vec3& scale)
+{
+    this->scale = scale;
+    updateMat();
 }
 
 void BasicModel::SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style)
@@ -71,6 +95,11 @@ void BasicModel::LoadFromTensors(Tensor vertices, Tensor normals, Tensor uvTextu
     mesh.AddAtribute(0, vertices);
     mesh.AddAtribute(1, normals);
     mesh.AddAtribute(2, uvTexture);
+}
+
+void BasicModel::updateMat()
+{
+    mat = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
 }
 
 }

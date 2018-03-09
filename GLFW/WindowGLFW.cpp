@@ -119,7 +119,7 @@ TG_Status WindowGLFW::Create(bool useContext)
         return TG_Critical;
     }
     glfwSetCursorPosCallback(window, &mouseCallback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     windowCritical.lock();
     windows.insert({window, this});
     windowCritical.unlock();

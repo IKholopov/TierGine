@@ -23,6 +23,7 @@
 #include <Primitives.h>
 #include <BasicModel.h>
 #include <BasicFpsCamera.h>
+#include <SimpleScene.h>
 #include <GLDebugInitializer.h>
 
 class SampleApp : public TierGine::GLBaseApp {
@@ -37,14 +38,34 @@ private:
     bool buffersInitialized = false;
     float val = 0.0;
     TierGine::BasicFpsCamera camera;
-    std::unique_ptr<TierGine::BasicModel> cube;
     TierGine::UniformVariable mult;
-    TierGine::UniformVariable modelMatrix;
-    TierGine::UniformVariable viewMatrix;
-    TierGine::UniformVariable projectionMatrix;
+    std::unique_ptr<TierGine::IScene> scene;
+    std::vector<std::unique_ptr<TierGine::InputListener>> listenrs;
 
     void initializeBuffers();
     void initializePipeline();
+
+    struct OnFirst : public TierGine::InputListener {
+    public:
+        OnFirst(TierGine::ISceneObject& model, TierGine::InputProvider& observable ) : TierGine::InputListener(observable), model(model) {}
+        virtual void OnKey(int action) override { auto rot = model.GetScale(); rot[0] += 0.01f; model.SetScale(rot); }
+        virtual void OnMouse(double x, double y) override {}
+        TierGine::ISceneObject& model;
+    };
+    struct OnSecond : public TierGine::InputListener {
+    public:
+        OnSecond(TierGine::ISceneObject& model, TierGine::InputProvider& observable ) : TierGine::InputListener(observable), model(model) {}
+        virtual void OnKey(int action) override { auto rot = model.GetScale(); rot[1] += 0.01f; model.SetScale(rot); }
+        virtual void OnMouse(double x, double y) override {}
+        TierGine::ISceneObject& model;
+    };
+    struct OnThird: public TierGine::InputListener {
+    public:
+        OnThird(TierGine::ISceneObject& model, TierGine::InputProvider& observable ) : TierGine::InputListener(observable), model(model) {}
+        virtual void OnKey(int action) override { auto rot = model.GetScale(); rot[2] += 0.01f; model.SetScale(rot); }
+        virtual void OnMouse(double x, double y) override {}
+        TierGine::ISceneObject& model;
+    };
 };
 
 static TierGine::AppEntry<SampleApp> appEntry;
@@ -60,23 +81,38 @@ TG_Status SampleApp::MainLoop()
         val = 0;
     }
     mult.Set(val);
-    modelMatrix.Set(cube->GetPositionTransformation());
-    const TierGine::CameraData projections = camera.GetCamera().GetCameraProjections();
-    viewMatrix.Set(projections.View);
-    projectionMatrix.Set(projections.Projection);
-    cube->SetRenderingMode(TierGine::RM_FILL, TierGine::PRS_FRONT);
-    cube->Draw();
+    scene->Render();
     return GLBaseApp::MainLoop();
 }
-
 
 void SampleApp::initializeBuffers()
 {
     camera.BindToInputProvider(GetInputProvider());
     initializePipeline();
 
-    cube.reset(new TierGine::BasicModel(TierGine::Primitives::CreateCubeMesh(*GetContext(), 2.0f)));
+    TierGine::IMesh& cubeMesh = *TierGine::Primitives::CreateCubeMesh(*GetContext(), 2.0f);
+    std::unique_ptr<TierGine::ISceneObject> cube(new TierGine::BasicModel(cubeMesh));
     cube->SetPosition({7.0f, -3.0f, -3.0f});
+    listenrs.push_back(std::make_unique<OnFirst>(*cube, GetInputProvider()));
+    GetInputProvider().AddKeyListener(GLFW_KEY_Y, listenrs[0].get());
+    listenrs.push_back(std::make_unique<OnSecond>(*cube, GetInputProvider()));
+    GetInputProvider().AddKeyListener(GLFW_KEY_U, listenrs[1].get());
+    listenrs.push_back(std::make_unique<OnThird>(*cube, GetInputProvider()));
+    GetInputProvider().AddKeyListener(GLFW_KEY_I, listenrs[2].get());
+    scene->Add(cube);
+
+    for(int i = 0; i < 30; ++i) {
+        std::unique_ptr<TierGine::ISceneObject> cube2(new TierGine::BasicModel(cubeMesh));
+        cube2->SetPosition({7.0f + i * 5.0f, 3.0f, 3.0f});
+        if(i % 2 == 0) {
+            cube2->SetRenderingMode(TierGine::RM_WIRE, TierGine::PRS_BOTH);
+        }
+        if(i % 3 == 0) {
+            cube2->SetRenderingMode(TierGine::RM_FILL, TierGine::PRS_BACK);
+        }
+        scene->Add(cube2);
+    }
+
     buffersInitialized = true;
 }
 
@@ -92,8 +128,6 @@ void SampleApp::initializePipeline()
         TierGine::Log::Info() << uniformIt->second.GetName() << std::endl;
     }
     mult = pipeline.GetUniformVariable("mult");
-    modelMatrix = pipeline.GetUniformVariable("modelMatrix");
-    projectionMatrix = pipeline.GetUniformVariable("projectionMatrix");
-    viewMatrix = pipeline.GetUniformVariable("viewMatrix");
     pipeline.Activate();
+    scene.reset(new TierGine::SimpleScene(camera.GetCamera(), *pipeline.GetPipeline()));
 }

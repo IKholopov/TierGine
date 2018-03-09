@@ -22,7 +22,7 @@ namespace TierGine {
 
 namespace Primitives {
 
-BasicModel CreateCubeMesh(IContext& context, float size);
+IMesh* CreateCubeMesh(IContext& context, float size);
 
 }
 

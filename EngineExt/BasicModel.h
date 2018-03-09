@@ -25,14 +25,19 @@ namespace TierGine {
 class BasicModel : public IModel {
 public:
     BasicModel(IMesh& mesh, glm::vec3 position = glm::vec3(0.0f),
+               glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 scale = glm::vec3(1.0f),
                TRenderingMode mode=RM_FILL, TPolygonRenderStyle style=PRS_FRONT);
     BasicModel(const BasicModel&& other);
 
     // IWorldObject interface
     virtual const glm::mat4x4 GetPositionTransformation() const override
     { return mat; }
-    virtual const glm::vec3& GetPosition() const override { return position; }
+    virtual const glm::vec3 GetPosition() const override { return position; }
     virtual void SetPosition(const glm::vec3& position) override;
+    virtual const glm::vec3 GetRotation() const override { return rotation; }
+    virtual void SetRotation(const glm::vec3& rotation) override;
+    virtual const glm::vec3 GetScale() const override { return scale; }
+    virtual void SetScale(const glm::vec3& scale) override;
 
     // IDrawable interface
     virtual void SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style) override;
@@ -44,13 +49,20 @@ public:
     // IModel interface
     virtual void LoadFromTensors(Tensor vertices, Tensor normals) override;
     virtual void LoadFromTensors(Tensor vertices, Tensor normals, Tensor uvTexture) override;
+    virtual IPipeline* GetPipeline() const override { return pipeline; }
+    virtual void SetPipeline(IPipeline* pipeline) override { this->pipeline = pipeline; }
 
 private:
     glm::mat4 mat;
     glm::vec3 position;
+    glm::vec3 rotation;
+    glm::vec3 scale;
     TRenderingMode mode;
     TPolygonRenderStyle style;
     IMesh& mesh;
+    IPipeline* pipeline;
+
+    void updateMat();
 };
 
 }

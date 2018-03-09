@@ -107,7 +107,7 @@ void GLShader::LoadFromPath(std::string path)
     } catch (std::ifstream::failure& e) {
         Log::Error() << "Failed to load file " << path << std::endl;
         throw;
-     }
+    }
 }
 
 }

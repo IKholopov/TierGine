@@ -14,36 +14,10 @@
    limitations under the License.
    ==============================================================================
 */
+#version 400
 
-#pragma once
+out vec4 frag_color;
 
-#include <Pipeline.h>
-
-namespace TierGine {
-
-enum TRenderingMode {
-    RM_FILL,
-    RM_WIRE,
-    RM_POINTS
-};
-
-enum TPolygonRenderStyle {
-    PRS_FRONT,
-    PRS_BACK,
-    PRS_BOTH
-};
-
-interface IRenderer {
-    virtual ~IRenderer() {}
-    virtual void RenderWithMode(TRenderingMode mode, TPolygonRenderStyle style) const = 0;
-};
-
-interface IDrawable {
-    virtual ~IDrawable() {}
-    virtual IPipeline* GetPipeline() const = 0;
-    virtual void SetPipeline(IPipeline* pipeline) = 0;
-    virtual void SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style) = 0;
-    virtual void Draw() = 0;
-};
-
+void main() {
+     frag_color = vec4(0.9, 0.5, 0.1, 1.0);
 }
