@@ -20,29 +20,41 @@
 
 namespace TierGine {
 
-void InputProvider::AddKeyListener(int key, InputListener* listener)
+KeyListener::KeyListener(std::function<void (int)> action, InputProvider& provider) :
+    Listener(provider), action(action)
 {
-    if(keySubscribers.find(key) == keySubscribers.end()) {
-        keySubscribers.insert({key, std::set<InputListener*>()});
-    }
-    std::set<InputListener*>& set = keySubscribers.find(key)->second;
-    assert(set.find(listener) == set.end());
-    set.insert(listener);
 }
 
-void InputProvider::AddMouseListener(InputListener* listener)
+MouseListener::MouseListener(std::function<void (int, int)> action, InputProvider& provider) :
+    Listener(provider), action(action)
 {
-    assert(mouseSubscribers.find(listener) == mouseSubscribers.end());
-    mouseSubscribers.insert(listener);
+}
+
+std::unique_ptr<Listener> InputProvider::AddKeyListener(int key, std::function<void(int)> action)
+{
+    if(keySubscribers.find(key) == keySubscribers.end()) {
+        keySubscribers.insert({key, std::set<Listener*>()});
+    }
+    std::set<Listener*>& set = keySubscribers.find(key)->second;
+    std::unique_ptr<Listener> listener(new KeyListener(action, *this));
+    set.insert(listener.get());
+    return listener;
+}
+
+std::unique_ptr<Listener> InputProvider::AddMouseListener(std::function<void(int, int)> action)
+{
+    std::unique_ptr<Listener> listener(new MouseListener(action, *this));
+    mouseSubscribers.insert(listener.get());
+    return listener;
 }
 
 void InputProvider::OnKey(int key, int action)
 {
     auto keySubs = keySubscribers.find(key);
     if(keySubs != keySubscribers.end()) {
-        std::set<InputListener*>& set = keySubs->second;
+        std::set<Listener*>& set = keySubs->second;
         for(auto it = set.begin(); it != set.end(); ++it) {
-            (*it)->OnKey(action);
+            static_cast<KeyListener*>(*it)->OnEvent(action);
         }
     }
 }
@@ -50,23 +62,22 @@ void InputProvider::OnKey(int key, int action)
 void InputProvider::OnMouse(double x, double y)
 {
     for(auto it = mouseSubscribers.begin(); it != mouseSubscribers.end(); ++it) {
-        (*it)->OnMouse(x, y);
+        static_cast<MouseListener*>(*it)->OnEvent(x, y);
     }
 }
 
 void InputProvider::Unsubscribe(Listener* listener)
 {
-    InputListener* inputListener = static_cast<InputListener*>(listener);
     for(auto keySubs = keySubscribers.begin();
         keySubs != keySubscribers.end(); ++keySubs)
     {
-        std::set<InputListener*>& set = keySubs->second;
-        auto found = set.find(inputListener);
+        std::set<Listener*>& set = keySubs->second;
+        auto found = set.find(listener);
         if(found != set.end()) {
             set.erase(found);
         }
     }
-    auto found = mouseSubscribers.find(inputListener);
+    auto found = mouseSubscribers.find(listener);
     if(found != mouseSubscribers.end()) {
         mouseSubscribers.erase(found);
     }

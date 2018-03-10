@@ -30,11 +30,12 @@ namespace TG = TierGine;
 
 class MazeApp : public TG::GLBaseApp {
 public:
-    MazeApp() : GLBaseApp(TG::WindowGLFW::Config(1920, 1080, "Maze", false)),
-      listener(*this, GetInputProvider())
+    MazeApp() : GLBaseApp(TG::WindowGLFW::Config(1920, 1080, "Maze", false))
     {
         Initializers().push_back(std::make_unique<TierGine::GLDebugInitializer>());
-        GetInputProvider().AddKeyListener(GLFW_KEY_Q, &listener);
+        listeners.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_Q, [this](int action) {
+            this->switchCamera();
+        })));
     }
 protected:
     virtual TG_Status MainLoop() override;
@@ -49,20 +50,11 @@ private:
     std::unique_ptr<TG::IPipeline> pipeline;
     std::unique_ptr<TG::SimpleScene> scene;
     std::unique_ptr<CollisionFilter> collisionFilter;
-    std::vector<std::unique_ptr<TG::InputListener>> listenrs;
+    TG::Listeners listeners;
 
     void initializeBuffers();
     void initializePipeline();
     void switchCamera();
-
-    //Press Q to switch between cameras
-    struct OnSwitchCam : public TG::InputListener {
-        OnSwitchCam(MazeApp& app, TG::InputProvider& provider) : InputListener(provider),
-            app(app) {}
-        virtual void OnKey(int action) override { app.switchCamera(); }
-        virtual void OnMouse(double x, double y) override {}
-        MazeApp& app;
-    } listener;
 };
 
 TG_Status MazeApp::MainLoop()

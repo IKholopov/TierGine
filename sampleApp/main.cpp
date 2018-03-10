@@ -40,32 +40,10 @@ private:
     TierGine::BasicFpsCamera camera;
     TierGine::UniformVariable mult;
     std::unique_ptr<TierGine::IScene> scene;
-    std::vector<std::unique_ptr<TierGine::InputListener>> listenrs;
+    TierGine::Listeners listenrs;
 
     void initializeBuffers();
     void initializePipeline();
-
-    struct OnFirst : public TierGine::InputListener {
-    public:
-        OnFirst(TierGine::ISceneObject& model, TierGine::InputProvider& observable ) : TierGine::InputListener(observable), model(model) {}
-        virtual void OnKey(int action) override { auto rot = model.GetScale(); rot[0] += 0.01f; model.SetScale(rot); }
-        virtual void OnMouse(double x, double y) override {}
-        TierGine::ISceneObject& model;
-    };
-    struct OnSecond : public TierGine::InputListener {
-    public:
-        OnSecond(TierGine::ISceneObject& model, TierGine::InputProvider& observable ) : TierGine::InputListener(observable), model(model) {}
-        virtual void OnKey(int action) override { auto rot = model.GetScale(); rot[1] += 0.01f; model.SetScale(rot); }
-        virtual void OnMouse(double x, double y) override {}
-        TierGine::ISceneObject& model;
-    };
-    struct OnThird: public TierGine::InputListener {
-    public:
-        OnThird(TierGine::ISceneObject& model, TierGine::InputProvider& observable ) : TierGine::InputListener(observable), model(model) {}
-        virtual void OnKey(int action) override { auto rot = model.GetScale(); rot[2] += 0.01f; model.SetScale(rot); }
-        virtual void OnMouse(double x, double y) override {}
-        TierGine::ISceneObject& model;
-    };
 };
 
 static TierGine::AppEntry<SampleApp> appEntry;
@@ -93,12 +71,24 @@ void SampleApp::initializeBuffers()
     TierGine::IMesh& cubeMesh = *TierGine::Primitives::CreateCubeMesh(*GetContext(), 2.0f);
     std::unique_ptr<TierGine::ISceneObject> cube(new TierGine::BasicModel(cubeMesh));
     cube->SetPosition({7.0f, -3.0f, -3.0f});
-    listenrs.push_back(std::make_unique<OnFirst>(*cube, GetInputProvider()));
-    GetInputProvider().AddKeyListener(GLFW_KEY_Y, listenrs[0].get());
-    listenrs.push_back(std::make_unique<OnSecond>(*cube, GetInputProvider()));
-    GetInputProvider().AddKeyListener(GLFW_KEY_U, listenrs[1].get());
-    listenrs.push_back(std::make_unique<OnThird>(*cube, GetInputProvider()));
-    GetInputProvider().AddKeyListener(GLFW_KEY_I, listenrs[2].get());
+    listenrs.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_Y,
+                                                                   [cube=cube.get()](int action) {
+        auto rot = cube->GetScale();
+        rot[0] += 0.01f;
+        cube->SetScale(rot);
+    })));
+    listenrs.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_U,
+                                                                   [cube=cube.get()](int action) {
+        auto rot = cube->GetScale();
+        rot[1] += 0.01f;
+        cube->SetScale(rot);
+    })));
+    listenrs.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_I,
+                                                                   [cube=cube.get()](int action) {
+        auto rot = cube->GetScale();
+        rot[2] += 0.01f;
+        cube->SetScale(rot);
+    })));
     scene->Add(cube);
 
     for(int i = 0; i < 30; ++i) {

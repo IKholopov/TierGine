@@ -19,6 +19,8 @@
 #include <Subscription.h>
 #include <unordered_map>
 #include <set>
+#include <functional>
+#include <vector>
 
 namespace TierGine {
 
@@ -28,29 +30,41 @@ enum TKeyAction {
     KA_REPEAT
 };
 
-class InputListener;
+class InputProvider;
+
+class KeyListener : public Listener {
+public:
+    KeyListener(std::function<void(int)> action, InputProvider& provider);
+    void OnEvent(int keyAction) { action(keyAction); }
+private:
+    std::function<void(int)> action;
+};
+
+
+class MouseListener : public Listener {
+public:
+    MouseListener(std::function<void(int, int)> action, InputProvider& provider);
+    void OnEvent(int x, int y) { action(x, y); }
+private:
+    std::function<void(int, int)> action;
+};
 
 class InputProvider : public IObservable{
 public:
-    const std::unordered_map<int, std::set<InputListener*> > GetKeySubscribers() const
+    const std::unordered_map<int, std::set<Listener*> > GetKeySubscribers() const
     { return keySubscribers; }
 
-    void AddKeyListener(int key, InputListener* listener);
-    void AddMouseListener(InputListener* listener);
+    std::unique_ptr<Listener> AddKeyListener(int key, std::function<void(int)> action);
+    std::unique_ptr<Listener> AddMouseListener(std::function<void(int, int)> action);
     void OnKey(int key, int action);
     void OnMouse(double x, double y);
     virtual void Unsubscribe(Listener* listener) override;
 
 private:
-    std::unordered_map<int, std::set<InputListener*> > keySubscribers;
-    std::set<InputListener*> mouseSubscribers;
+    std::unordered_map<int, std::set<Listener*> > keySubscribers;
+    std::set<Listener*> mouseSubscribers;
 };
 
-class InputListener : public Listener {
-public:
-    InputListener(InputProvider& provider) : Listener(provider) {}
-    virtual void OnKey(int action) = 0;
-    virtual void OnMouse(double x, double y) = 0;
-};
+typedef std::vector<std::unique_ptr<Listener>> Listeners;
 
 }

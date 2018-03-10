@@ -91,14 +91,11 @@ private:
     InputProvider inputManager;
     std::shared_ptr<IContext> context;
     GLFWwindow* window;
-    std::vector<std::unique_ptr<InputListener>> inputListeners;
+    Listeners inputListeners;
 
     static void mouseCallback(GLFWwindow* window, double x, double y);
     static std::mutex windowCritical;
     static std::unordered_map<GLFWwindow*, WindowGLFW*> windows;
-
-    struct OnFullScreen;
-    struct OnExit;
 };
 
 }

@@ -22,22 +22,6 @@
 
 namespace TierGine {
 
-struct WindowGLFW::OnFullScreen : public InputListener {
-    OnFullScreen(WindowGLFW& window):InputListener(window.inputManager), window(window){}
-    WindowGLFW& window;
-
-    virtual void OnKey(int action) override { if(action == GLFW_PRESS) { window.Fullscreen(); } }
-    virtual void OnMouse(double x, double y) override {}
-};
-
-struct WindowGLFW::OnExit : public InputListener {
-    OnExit(WindowGLFW& window):InputListener(window.inputManager), window(window){}
-    WindowGLFW& window;
-
-    virtual void OnKey(int action) override { if(action == GLFW_PRESS) { window.Close(); } }
-    virtual void OnMouse(double x, double y) override {}
-};
-
 std::mutex WindowGLFW::windowCritical;
 std::unordered_map<GLFWwindow*, WindowGLFW*> WindowGLFW::   windows;
 
@@ -45,12 +29,14 @@ WindowGLFW::WindowGLFW(const WindowGLFW::Config& config, IContext* context) :
     config(config),
     context(context)
 {
-    inputListeners.push_back(std::make_unique<OnFullScreen>(*this));
-    inputManager.AddKeyListener(GLFW_KEY_F11,
-                                inputListeners.at(inputListeners.size() - 1).get());
-    inputListeners.push_back(std::make_unique<OnExit>(*this));
-    inputManager.AddKeyListener(GLFW_KEY_ESCAPE,
-                                inputListeners.rbegin()->get());
+    inputListeners.push_back(std::move(inputManager.AddKeyListener(GLFW_KEY_F11,
+                                                                   [this](int action) {
+        if(action == GLFW_PRESS) { this->Fullscreen(); }
+    })));
+    inputListeners.push_back(std::move(inputManager.AddKeyListener(GLFW_KEY_ESCAPE,
+                                                                   [this](int action) {
+        if(action == GLFW_PRESS) { this->Close(); }
+    })));
 }
 
 WindowGLFW::~WindowGLFW()

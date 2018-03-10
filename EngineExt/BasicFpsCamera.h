@@ -42,13 +42,13 @@ private:
     int previousX;
     int previousY;
     bool initialized;
-    std::vector<std::unique_ptr<InputListener>> listeners;
+    Listeners listeners;
 
-    struct OnMouseMove;
-    struct OnForward;
-    struct OnBackward;
-    struct OnRight;
-    struct OnLeft;
+    void onMouse(int x, int y);
+    void onForward(int action);
+    void onBackward(int action);
+    void onRight(int action);
+    void onLeft(int action);
 };
 
 }
