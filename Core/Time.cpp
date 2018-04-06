@@ -14,15 +14,24 @@
    limitations under the License.
    ==============================================================================
 */
+#include <Time.h>
 
-#include <memory>
+#include <EngineException.h>
 
-#define interface struct
+namespace TierGine {
 
-#define BIT(n) n == 0 ? 0 : 1 << (n-1)
-#define Byte unsigned char
+namespace Time {
 
-typedef int TG_Status;
+std::unique_ptr<ITimeProvider> TimeProvider;
 
-#define TG_Ok 0
-#define TG_Critical 1
+double GetTime()
+{
+    if(TimeProvider.get() == nullptr) {
+        throw EngineException("TimeProvider wa not set!");
+    }
+    return TimeProvider->GetTime();
+}
+
+}
+
+}

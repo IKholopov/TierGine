@@ -19,6 +19,7 @@
 #include <FreeCamera.h>
 
 #include <InputProvider.h>
+#include <PhysicsPrimitives.h>
 #include <vector>
 
 namespace TierGine {
@@ -27,17 +28,24 @@ interface IMovementFilter {
     virtual glm::vec3 FilterPosition(glm::vec3& pos, const glm::vec3& prevPos) = 0;
 };
 
-class BasicFpsCamera {
+class BasicFpsCamera : public ICollisionSolver {
 public:
     BasicFpsCamera();
     ICamera& GetCamera() { return cameraView; }
     void SetMovementFilter(IMovementFilter* filter) { this->filter = filter; }
+    IPhysicsObject* GetPhysics() { return physicsObject.get(); }
+    void SetPhysicsObject(std::unique_ptr<IPhysicsObject>&& object) {
+        this->physicsObject = std::move(object);
+        cameraView.SetPosition(physicsObject->GetCenter());
+    }
     void BindToInputProvider(InputProvider& provider);
     void UnbindFromInput();
 
 private:
     FreeCamera cameraView;
+    glm::vec3 momentum;
     IMovementFilter* filter;
+    std::unique_ptr<IPhysicsObject> physicsObject;
     float speed;
     int previousX;
     int previousY;
@@ -49,6 +57,9 @@ private:
     void onBackward(int action);
     void onRight(int action);
     void onLeft(int action);
+
+    // ICollisionSolver interface for physicsObject
+    virtual void Update(glm::vec3& center, glm::vec3& momentum) override;
 };
 
 }

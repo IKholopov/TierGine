@@ -27,6 +27,7 @@ interface IWindow {
     virtual void Move(int x, int y) = 0;
     virtual void Fullscreen() = 0;
     virtual void Update() = 0;
+    virtual void RegularUpdate() = 0;
     virtual bool ToClose() const = 0;
 };
 

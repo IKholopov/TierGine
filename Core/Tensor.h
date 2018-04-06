@@ -20,12 +20,13 @@
 #include <TierGine.CoreDefs.h>
 
 #include <assert.h>
+#include <cstring>
 
 namespace TierGine {
 
 class Tensor {
 public:
-    enum Type { T_BOOL, T_BYTE, T_UBYTE, T_SHORT, T_USHORT, T_INT, T_UINT, T_FLOAT, T_DOUBLE };
+    enum Type { T_BOOL, T_BYTE, T_UBYTE, T_SHORT, T_USHORT, T_INT, T_UINT, T_FLOAT, T_DOUBLE, T_ANY };
     interface DataHolder {
         virtual ~DataHolder() {}
 
@@ -33,25 +34,26 @@ public:
         virtual int GetTypeSize() const = 0;
         virtual int GetLength() const = 0;
         virtual Type GetType() const = 0;
+        virtual Tensor Add(Tensor tensor) const = 0;
     };
 
     Tensor(int size, char channels, std::shared_ptr<DataHolder> data);
     Tensor(const Tensor& other) = default;
     Tensor& operator=(const Tensor& other) = default;
     Tensor(Tensor&& other) = default;
-    Tensor& operator=(Tensor&& other) = default;
+    Tensor& operator=(const Tensor&& other);
 
-    const void* GetRawPointer() const { return data->GetRawAddress(); }
+    const void* GetRawPointer() const { return data == nullptr ? nullptr : data->GetRawAddress(); }
     int GetSize() const { return size; }
     char GetChannels() const { return channels; }
-    Type GetType() const { return data->GetType(); }
+    Type GetType() const { return data == nullptr ? T_ANY : data->GetType(); }
+    Tensor Add(Tensor other) const;
 
 private:
     std::shared_ptr<DataHolder> data;
-    const int size;
-    const char channels;
+    int size;
+    char channels;
 };
-
 
 template <typename T>
 class TensorData : public Tensor::DataHolder {
@@ -61,7 +63,7 @@ public:
         owner(owner)
     { allocData(); }
 
-    TensorData(T* data, int length, bool owner = true) :
+    TensorData(const T* data, int length, bool owner = true) :
         length(length),
         data(data),
         owner(owner)
@@ -73,10 +75,11 @@ public:
     virtual int GetTypeSize() const override { return sizeof(T); }
     virtual int GetLength() const override { return length; }
     virtual Tensor::Type GetType() const override;
+    virtual Tensor Add(Tensor tensor) const override;
 
 private:
     const int length;
-    T* data;
+    const T* data;
     bool owner;
 
     void allocData();
@@ -107,6 +110,23 @@ Tensor CreateTensor(int size, int channels, std::initializer_list<T> values)
 
 template <typename T>
 Tensor CreateTensor(const T& otherImplementation);
+
+template<typename T>
+Tensor TensorData<T>::Add(Tensor tensor) const
+{
+    int additionalLength = tensor.GetChannels()*tensor.GetSize();
+    int newLength = length + additionalLength;
+    T* newData = new T[newLength];
+    std::shared_ptr<TensorData<T>> shared = std::make_shared<TensorData<T>>(newData, newLength);
+    Tensor t(length / tensor.GetChannels() + tensor.GetSize(), tensor.GetChannels(),
+             shared);
+    if(data != nullptr) {
+        std::memcpy(newData, data, GetTypeSize() * length);
+    }
+    assert(tensor.GetRawPointer() != nullptr);
+    std::memcpy(newData + length, tensor.GetRawPointer(), GetTypeSize() * additionalLength);
+    return t;
+}
 
 template<typename T>
 void TensorData<T>::allocData()

@@ -38,6 +38,7 @@ public:
 
 protected:
     virtual TG_Status MainLoop() = 0;
+    virtual TG_Status RegularUpdate() = 0;
     virtual bool ShouldTerminate() const = 0;
 
     std::vector<std::unique_ptr<IInitializable>>& Initializers() { return initializers; }

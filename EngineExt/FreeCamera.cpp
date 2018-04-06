@@ -39,6 +39,7 @@ const glm::mat4x4 FreeCamera::GetPositionTransformation() const {
 
 const CameraData FreeCamera::GetCameraProjections() const
 {
+    std::lock_guard<std::mutex> guard(criticalSection);
     CameraData data;
     float phi = direction[0];
     float theta = direction[1];

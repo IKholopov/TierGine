@@ -29,6 +29,9 @@ find_package(assimp)
 find_package(SOIL)
 find_package(imgui)
 endif()
+
+find_package(Threads REQUIRED)
+
 add_subdirectory(Core)
 add_subdirectory(GLFW)
 add_subdirectory(OpenGL)

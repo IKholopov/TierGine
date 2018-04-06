@@ -16,6 +16,8 @@
 */
 #pragma once
 
+#include <mutex>
+
 #include <Camera.h>
 
 namespace TierGine {
@@ -28,11 +30,11 @@ public:
     virtual const glm::mat4x4 GetPositionTransformation() const override;
     virtual const glm::vec3 GetPosition() const override { return position; }
     virtual void SetPosition(const glm::vec3& position) override
-    { this->position = position; }
+    { std::lock_guard<std::mutex> guard(criticalSection); this->position = position; }
     virtual const glm::vec3 GetRotation() const override
     { return glm::vec3(0.0f, direction[0],direction[1]); }
     virtual void SetRotation(const glm::vec3& rotation) override
-    { direction[0] = rotation[1]; direction[1] = rotation[2]; }
+    { std::lock_guard<std::mutex> guard(criticalSection); direction[0] = rotation[1]; direction[1] = rotation[2]; }
     virtual const glm::vec3 GetScale() const override { return glm::vec3(1.0f); }
     virtual void SetScale(const glm::vec3& scale) override {}
 
@@ -50,6 +52,7 @@ public:
     virtual const CameraData GetCameraProjections() const override;
 
 private:
+    mutable std::mutex criticalSection;
     glm::vec3 position;
     glm::vec2 direction; //phi, theta
     float fov;

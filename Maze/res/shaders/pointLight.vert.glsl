@@ -14,29 +14,36 @@
    limitations under the License.
    ==============================================================================
 */
-#pragma once
 
-#include <Initializable.h>
-#include <mutex>
-#include <assert.h>
+#version 400
 
-namespace TierGine {
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 
-class GLFWInitializer : public IInitializable {
-public:
-    // IInitializable interface
-    virtual bool Initialize() override;
-    virtual bool InitializeThread() override;
-    virtual void Deinitialize() override;
-    virtual void DeinitializeThread() override { assert(initializedThread); }
+uniform mat3 normalToCameraMatrix;
 
-    virtual bool IsInitialized() override { return initialized; }
-    virtual bool IsInitializedOnThread() override { return initializedThread; }
-
-private:
-    static bool initialized;
-    static std::mutex critical;
-    thread_local static bool initializedThread;
+struct LightInfo
+{
+    vec3 pos;
+    vec3 La;
+    vec3 Ld;
+    vec3 Ls;
 };
+uniform LightInfo light;
 
+layout(location = 0) in vec3 vertexPosition;
+layout(location = 1) in vec3 vertexNormal;
+
+out vec3 normalCamSpace;
+out vec4 lightPosCamSpace;
+out vec4 posCamSpace;
+
+void main()
+{
+    posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+    normalCamSpace = normalize(normalToCameraMatrix * vertexNormal);
+    lightPosCamSpace = viewMatrix * vec4(light.pos, 1.0);
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

@@ -32,7 +32,7 @@ WindowGLFW::WindowGLFW(const WindowGLFW::Config& config, IContext* context) :
     inputListeners.push_back(std::move(inputManager.AddKeyListener(GLFW_KEY_F11,
                                                                    [this](int action) {
         if(action == GLFW_PRESS) { this->Fullscreen(); }
-    })));
+    }, 0.5f)));
     inputListeners.push_back(std::move(inputManager.AddKeyListener(GLFW_KEY_ESCAPE,
                                                                    [this](int action) {
         if(action == GLFW_PRESS) { this->Close(); }
@@ -80,6 +80,11 @@ void WindowGLFW::Fullscreen()
 
 void WindowGLFW::Update()
 {
+    glfwSwapBuffers(window);
+}
+
+void WindowGLFW::RegularUpdate()
+{
     auto& keySubs = inputManager.GetKeySubscribers();
     for(auto it = keySubs.begin(); it != keySubs.end(); ++it) {
         if(glfwGetKey(window, it->first) == GLFW_PRESS) {
@@ -87,7 +92,6 @@ void WindowGLFW::Update()
         }
     }
     glfwPollEvents();
-    glfwSwapBuffers(window);
 }
 
 TG_Status WindowGLFW::Create(bool useContext)

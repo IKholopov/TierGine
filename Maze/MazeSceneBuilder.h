@@ -18,6 +18,7 @@
 
 #include <SimpleScene.h>
 #include <BasicFpsCamera.h>
+#include <MazeGrid.h>
 #include <fstream>
 #include <unordered_map>
 
@@ -38,9 +39,10 @@ public:
     constexpr static const char* const BlockName = "block";
 
     MazeSceneBuilder(std::string path);
-    TG::SimpleScene* CreateScene(TG::IContext& context,
+    TG::SimpleScene* CreateSceneAndGrid(TG::IContext& context,
                             const TG::ICamera& camera,
                             TierGine::IPipeline& defaultPipeline);
+    TG::PhysicsWorld* CreatePhysicsEngine();
     CollisionFilter* CreateCollisionFilter();
 
 private:
@@ -55,6 +57,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Quad>> quads;
     std::unordered_map<std::string, std::unique_ptr<Tile>> tiles;
     std::vector<std::vector<std::string>> map;
+    std::unique_ptr<Grid> grid;
     std::vector<std::vector<bool>> collision;
     int width, height;
 

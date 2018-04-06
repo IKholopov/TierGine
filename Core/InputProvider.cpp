@@ -16,13 +16,28 @@
 */
 #include <InputProvider.h>
 
+#include <Time.h>
 #include <assert.h>
+#include <limits>
 
 namespace TierGine {
 
-KeyListener::KeyListener(std::function<void (int)> action, InputProvider& provider) :
-    Listener(provider), action(action)
+KeyListener::KeyListener(std::function<void (int)> action, InputProvider& provider, float timeout) :
+    Listener(provider),
+    action(action),
+    lastHit(std::numeric_limits<float>::min()),
+    timeout(timeout)
 {
+}
+
+void KeyListener::OnEvent(int keyAction)
+{
+    float time = Time::GetTime();
+    if(time - lastHit < timeout) {
+        return;
+    }
+    action(keyAction);
+    lastHit = time;
 }
 
 MouseListener::MouseListener(std::function<void (int, int)> action, InputProvider& provider) :
@@ -30,13 +45,13 @@ MouseListener::MouseListener(std::function<void (int, int)> action, InputProvide
 {
 }
 
-std::unique_ptr<Listener> InputProvider::AddKeyListener(int key, std::function<void(int)> action)
+std::unique_ptr<Listener> InputProvider::AddKeyListener(int key, std::function<void(int)> action, float timeout)
 {
     if(keySubscribers.find(key) == keySubscribers.end()) {
         keySubscribers.insert({key, std::set<Listener*>()});
     }
     std::set<Listener*>& set = keySubscribers.find(key)->second;
-    std::unique_ptr<Listener> listener(new KeyListener(action, *this));
+    std::unique_ptr<Listener> listener(new KeyListener(action, *this, timeout));
     set.insert(listener.get());
     return listener;
 }

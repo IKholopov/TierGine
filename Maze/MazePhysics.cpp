@@ -14,15 +14,18 @@
    limitations under the License.
    ==============================================================================
 */
+#include <MazePhysics.h>
 
-#include <memory>
+namespace TG = TierGine;
 
-#define interface struct
+std::unique_ptr<TierGine::PhysicsWorld::ICollisionsIterator> MazePhysicsEngine::GetCollisions(TierGine::IPhysicsObject* obj)
+{
+    return grid->GetCollisions(obj);
+}
 
-#define BIT(n) n == 0 ? 0 : 1 << (n-1)
-#define Byte unsigned char
-
-typedef int TG_Status;
-
-#define TG_Ok 0
-#define TG_Critical 1
+void MazePhysicsEngine::AddCollisionToResolve(std::pair<TierGine::ICollisionSource*, TierGine::IPhysicsObject*> collision)
+{
+    auto [source, object] = collision;
+    std::unique_ptr<TG::ICollisionSolver> solver = source->GetSolverFor(*object);
+    object->ApplyWorldUpdate(solver.get());
+}

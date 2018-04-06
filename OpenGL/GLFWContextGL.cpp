@@ -41,6 +41,8 @@ TG_Status GLFWContextGL::Activate()
     glfwMakeContextCurrent(window.GetWindow());
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ZERO);
     return TG_Ok;
 }
 

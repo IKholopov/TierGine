@@ -17,6 +17,8 @@
 
 #include <BaseApp.h>
 #include <CoutLog.h>
+#include <Time.h>
+#include <thread>
 
 namespace TierGine {
 
@@ -54,12 +56,25 @@ void BaseApp::DeinitializeApp()
 
 TG_Status BaseApp::Main()
 {
+    std::thread updateThread([this]() {
+        while (!this->ShouldTerminate()) {
+            static const float timeout = 0.01f;
+            static float lastHit = 0.0f;
+            float time = Time::GetTime();
+            if( time - lastHit > timeout) {
+                lastHit = time;
+                this->RegularUpdate();
+            }
+        }
+    });
     while(!ShouldTerminate()) {
         TG_Status status = MainLoop();
         if( status != TG_Ok ) {
+            updateThread.detach();
             return status;
         }
     }
+    updateThread.join();
     return TG_Ok;
 }
 

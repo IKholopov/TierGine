@@ -17,6 +17,7 @@
 
 #include <GLFWInitializer.h>
 #include <Log.h>
+#include <Time.h>
 
 #include <GLFW/glfw3.h>
 
@@ -34,6 +35,12 @@ void glfwErrorCallback(int errorCode, const char* message)
     Log::Error() << message << std::endl;
 }
 
+class GLFWTimeProvider : public ITimeProvider {
+public:
+    // ITimeProvider interface
+    virtual double GetTime() override { return glfwGetTime(); }
+};
+
 }
 
 bool GLFWInitializer::Initialize()
@@ -47,6 +54,7 @@ bool GLFWInitializer::Initialize()
         Log::Error() << "GLFW initialization failed!" << std::endl;
         return false;
     }
+    Time::TimeProvider.reset(new GLFWTimeProvider());
     initialized = true;
     int major, minor, rev = 0;
     glfwGetVersion(&major, &minor, &rev);

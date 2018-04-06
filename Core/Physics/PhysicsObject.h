@@ -14,15 +14,30 @@
    limitations under the License.
    ==============================================================================
 */
+#pragma once
 
-#include <memory>
+#include <TierGine.CoreDefs.h>
+#include <Physics/AABox.h>
 
-#define interface struct
+namespace TierGine {
 
-#define BIT(n) n == 0 ? 0 : 1 << (n-1)
-#define Byte unsigned char
 
-typedef int TG_Status;
+interface IPhysicsObject;
 
-#define TG_Ok 0
-#define TG_Critical 1
+interface ICollisionSolver {
+    virtual void Update(glm::vec3& center, glm::vec3& momentum) = 0;
+};
+
+interface ICollisionSource {
+    virtual ~ICollisionSource() {}
+    virtual const AABox& GetAABox() const = 0;
+    virtual std::unique_ptr<ICollisionSolver> GetSolverFor(IPhysicsObject& object) = 0;
+};
+
+interface IPhysicsObject : public ICollisionSource {
+    virtual const glm::vec3& GetCenter() = 0;
+    virtual const glm::vec3& GetMomentum() = 0;
+    virtual void ApplyWorldUpdate(ICollisionSolver* solver) = 0;
+};
+
+}

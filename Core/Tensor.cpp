@@ -28,6 +28,26 @@ Tensor::Tensor(int size, char channels, std::shared_ptr<TierGine::Tensor::DataHo
 {
 }
 
+Tensor& Tensor::operator=(const Tensor&& other)
+{
+    if(&other != this) {
+        data = other.data;
+        size = other.size;
+        channels = other.channels;
+    }
+    return *this;
+}
+
+Tensor Tensor::Add(Tensor other) const
+{
+    assert(GetChannels() == other.GetChannels());
+    assert(GetType() == other.GetType() || GetType() == T_ANY || other.GetType() == T_ANY);
+    if(data.get() == nullptr) {
+        return Tensor(other.GetSize(), other.GetChannels(), other.data);
+    }
+    return data->Add(other);
+}
+
 template<>
 Tensor::Type TensorData<char>::GetType() const { return Tensor::T_BYTE; }
 
@@ -53,9 +73,6 @@ template<>
 Tensor::Type TensorData<float>::GetType() const { return Tensor::T_FLOAT; }
 
 template<>
-Tensor::Type TensorData<const float>::GetType() const { return Tensor::T_FLOAT; }
-
-template<>
 Tensor::Type TensorData<double>::GetType() const { return Tensor::T_DOUBLE; }
 
 template <>
@@ -67,42 +84,42 @@ Tensor CreateTensor<float>(const float& otherImplementation)
 template <>
 Tensor CreateTensor<glm::vec2>(const glm::vec2& otherImplementation)
 {
-    auto data = new TensorData<const float>(glm::value_ptr(otherImplementation), 2, false);
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 2, false);
     return Tensor(1, 2, std::shared_ptr<Tensor::DataHolder>(data));
 }
 
 template <>
 Tensor CreateTensor<glm::vec3>(const glm::vec3& otherImplementation)
 {
-    auto data = new TensorData<const float>(glm::value_ptr(otherImplementation), 3, false);
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 3, false);
     return Tensor(1, 3, std::shared_ptr<Tensor::DataHolder>(data));
 }
 
 template <>
 Tensor CreateTensor<glm::vec4>(const glm::vec4& otherImplementation)
 {
-    auto data = new TensorData<const float>(glm::value_ptr(otherImplementation), 4, false);
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 4, false);
     return Tensor(1, 4, std::shared_ptr<Tensor::DataHolder>(data));
 }
 
 template <>
 Tensor CreateTensor<glm::mat2>(const glm::mat2& otherImplementation)
 {
-    auto data = new TensorData<const float>(glm::value_ptr(otherImplementation), 4, false);
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 4, false);
     return Tensor(2, 2, std::shared_ptr<Tensor::DataHolder>(data));
 }
 
 template <>
 Tensor CreateTensor<glm::mat3>(const glm::mat3& otherImplementation)
 {
-    auto data = new TensorData<const float>(glm::value_ptr(otherImplementation), 9, false);
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 9, false);
     return Tensor(3, 3, std::shared_ptr<Tensor::DataHolder>(data));
 }
 
 template <>
 Tensor CreateTensor<glm::mat4>(const glm::mat4& otherImplementation)
 {
-    auto data = new TensorData<const float>(glm::value_ptr(otherImplementation), 16, false);
+    auto data = new TensorData<float>(glm::value_ptr(otherImplementation), 16, false);
     return Tensor(4, 4, std::shared_ptr<Tensor::DataHolder>(data));
 }
 

@@ -15,14 +15,28 @@
    ==============================================================================
 */
 
-#include <memory>
+#pragma once
 
-#define interface struct
+#include <glm/glm.hpp>
 
-#define BIT(n) n == 0 ? 0 : 1 << (n-1)
-#define Byte unsigned char
+namespace TierGine {
 
-typedef int TG_Status;
+class AABox {
+public:
+    AABox(const glm::vec3& v1, const glm::vec3& v2);
+    AABox(AABox&& other);
 
-#define TG_Ok 0
-#define TG_Critical 1
+    AABox& operator=(AABox&& other);
+
+    bool Collide(const AABox& other) const;
+    bool Collide(const glm::vec3& v) const;
+
+    const glm::vec3& Lower() const { return lower; }
+    const glm::vec3& Higher() const { return higher; }
+
+private:
+    glm::vec3 lower;
+    glm::vec3 higher;
+};
+
+}

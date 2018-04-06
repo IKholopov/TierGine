@@ -14,15 +14,21 @@
    limitations under the License.
    ==============================================================================
 */
+#pragma once
 
-#include <memory>
+#include <TierGine.CoreDefs.h>
 
-#define interface struct
+namespace TierGine {
 
-#define BIT(n) n == 0 ? 0 : 1 << (n-1)
-#define Byte unsigned char
+interface ITimeProvider {
+    virtual double GetTime() = 0;
+};
 
-typedef int TG_Status;
+namespace Time {
 
-#define TG_Ok 0
-#define TG_Critical 1
+double GetTime();
+extern std::unique_ptr<ITimeProvider> TimeProvider;
+
+}
+
+}

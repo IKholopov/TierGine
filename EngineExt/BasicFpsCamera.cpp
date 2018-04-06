@@ -20,8 +20,9 @@
 namespace TierGine {
 
 BasicFpsCamera::BasicFpsCamera():
+    momentum(0.0f, 0.0f, 0.0f),
     filter(nullptr),
-    speed(0.1f),
+    speed(0.05f),
     previousX(0),
     previousY(0),
     initialized(false)
@@ -54,6 +55,7 @@ void BasicFpsCamera::BindToInputProvider(InputProvider& provider)
 void BasicFpsCamera::UnbindFromInput()
 {
     listeners.clear();
+    initialized = false;
 }
 
 void BasicFpsCamera::onMouse(int x, int y)
@@ -91,11 +93,11 @@ void BasicFpsCamera::onForward(int action)
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     float& theta = direction[1];
-    position += speed*glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
-    if(filter != nullptr) {
-        position = filter->FilterPosition(position, cameraView.GetPosition());
+    momentum = glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
+    if(physicsObject != nullptr) {
+        physicsObject->ApplyWorldUpdate(this);
+        cameraView.SetPosition(physicsObject->GetCenter());
     }
-    cameraView.SetPosition(position);
 }
 
 void BasicFpsCamera::onBackward(int action)
@@ -104,11 +106,11 @@ void BasicFpsCamera::onBackward(int action)
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     float& theta = direction[1];
-    position -= speed*glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
-    if(filter != nullptr) {
-        position = filter->FilterPosition(position, cameraView.GetPosition());
+    momentum = -glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));;
+    if(physicsObject != nullptr) {
+        physicsObject->ApplyWorldUpdate(this);
+        cameraView.SetPosition(physicsObject->GetCenter());
     }
-    cameraView.SetPosition(position);
 }
 
 void BasicFpsCamera::onRight(int action)
@@ -117,11 +119,11 @@ void BasicFpsCamera::onRight(int action)
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     phi += M_PI_2;
-    position += speed*glm::vec3(cos(phi), 0.0f, sin(phi));
-    if(filter != nullptr) {
-        position = filter->FilterPosition(position, cameraView.GetPosition());
+    momentum = glm::vec3(cos(phi), 0.0f, sin(phi));
+    if(physicsObject != nullptr) {
+        physicsObject->ApplyWorldUpdate(this);
+        cameraView.SetPosition(physicsObject->GetCenter());
     }
-    cameraView.SetPosition(position);
 }
 
 void BasicFpsCamera::onLeft(int action)
@@ -130,11 +132,17 @@ void BasicFpsCamera::onLeft(int action)
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     phi += M_PI_2;
-    position -= speed*glm::vec3(cos(phi), 0.0f, sin(phi));
-    if(filter != nullptr) {
-        position = filter->FilterPosition(position, cameraView.GetPosition());
+    momentum = -glm::vec3(cos(phi), 0.0f, sin(phi));
+    if(physicsObject != nullptr) {
+        physicsObject->ApplyWorldUpdate(this);
+        cameraView.SetPosition(physicsObject->GetCenter());
     }
-    cameraView.SetPosition(position);
+}
+
+void BasicFpsCamera::Update(glm::vec3& center, glm::vec3& momentum)
+{
+    momentum = this->momentum;
+    center += speed * momentum;
 }
 
 }

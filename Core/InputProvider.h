@@ -34,10 +34,12 @@ class InputProvider;
 
 class KeyListener : public Listener {
 public:
-    KeyListener(std::function<void(int)> action, InputProvider& provider);
-    void OnEvent(int keyAction) { action(keyAction); }
+    KeyListener(std::function<void(int)> action, InputProvider& provider, float timeout = 0.0f);
+    void OnEvent(int keyAction);
 private:
     std::function<void(int)> action;
+    float lastHit;
+    float timeout;
 };
 
 
@@ -54,7 +56,7 @@ public:
     const std::unordered_map<int, std::set<Listener*> > GetKeySubscribers() const
     { return keySubscribers; }
 
-    std::unique_ptr<Listener> AddKeyListener(int key, std::function<void(int)> action);
+    std::unique_ptr<Listener> AddKeyListener(int key, std::function<void(int)> action, float timeout = 0.0f);
     std::unique_ptr<Listener> AddMouseListener(std::function<void(int, int)> action);
     void OnKey(int key, int action);
     void OnMouse(double x, double y);

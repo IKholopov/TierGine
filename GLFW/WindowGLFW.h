@@ -79,6 +79,7 @@ public:
     virtual void Move(int x, int y) override;
     virtual void Fullscreen() override;
     virtual void Update() override;
+    virtual void RegularUpdate() override;
     virtual bool ToClose() const override { assert(window); return glfwWindowShouldClose(window); }
 
     TG_Status Create(bool useContext);
