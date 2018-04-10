@@ -16,6 +16,7 @@
 */
 
 #include <GLFWContextGL.h>
+#include <GLMaterial.h>
 #include <GLShader.h>
 
 namespace TierGine {
@@ -42,7 +43,6 @@ TG_Status GLFWContextGL::Activate()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ZERO);
     return TG_Ok;
 }
 
@@ -79,6 +79,39 @@ void GLFWContextGL::DeleteMesh(const IMesh* mesh)
     auto storedMesh = meshes.find(mesh);
     assert(storedMesh != meshes.end());
     meshes.erase(storedMesh);
+}
+
+ITexture* GLFWContextGL::CreateTexture()
+{
+    GLTexture* texture = new GLTexture(*this);
+    textures.insert({texture, nullptr}).first->second.reset(texture);
+    return texture;
+}
+
+void GLFWContextGL::DeleteTexture(const ITexture* texture)
+{
+    auto storedTexture = textures.find(texture);
+    assert(storedTexture != textures.end());
+    textures.erase(storedTexture);
+}
+
+ITextureSampler* GLFWContextGL::CreateTextureSampler(const std::string& name)
+{
+    GLTextureSampler* sampler = new GLTextureSampler(*this, name);
+    textureSamplers.insert({sampler, nullptr}).first->second.reset(sampler);
+    return sampler;
+}
+
+void GLFWContextGL::DeleteTextureSampler(const ITextureSampler* sampler)
+{
+    auto storedSampler = textureSamplers.find(sampler);
+    assert(storedSampler != textureSamplers.end());
+    textureSamplers.erase(storedSampler);
+}
+
+std::unique_ptr<IMaterial> GLFWContextGL::CreateMaterial(ITextureSampler* sampler)
+{
+    return std::unique_ptr<IMaterial>(new GLMaterial(sampler));
 }
 
 }

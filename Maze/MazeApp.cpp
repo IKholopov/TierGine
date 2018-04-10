@@ -28,9 +28,24 @@
 #include <PhysicsPrimitives.h>
 #include <MazePhysics.h>
 #include <Time.h>
-#include <iostream>
 
 namespace TG = TierGine;
+
+class FPSCounter {
+public:
+    FPSCounter():lastHit(0),nFrames(0) {}
+    void Count() {
+        ++nFrames;
+        if(TG::Time::GetTime() - lastHit > 1.0) {
+            TG::Log::Info()<< std::to_string(1000.0/double(nFrames)) << "ms/frame" << std::endl;
+            nFrames = 0;
+            lastHit += 1.0;
+        }
+    }
+private:
+    double lastHit;
+    int nFrames;
+};
 
 class MazeApp : public TG::GLBaseApp {
 public:
@@ -52,11 +67,12 @@ private:
     bool initialized = false;
     TG::BasicFpsCamera freeCamera;
     TG::BasicFpsCamera mazeCamera;
+    FPSCounter counter;
     std::unique_ptr<TG::IPipeline> pipeline;
     std::unique_ptr<TG::SimpleScene> scene;
     std::unique_ptr<TG::PhysicsWorld> physics;
     std::unique_ptr<TG::ImpactSource> yImpact;
-    std::unique_ptr<CollisionFilter> collisionFilter;
+    std::vector<std::unique_ptr<TG::IMaterial> > materials;
     TG::Listeners listeners;
     float timeout;
     float lastHit;
@@ -74,16 +90,17 @@ TG_Status MazeApp::MainLoop()
         freeCamera.BindToInputProvider(GetInputProvider());
         initializePipeline();
         initializeBuffers();
-        //mazeCamera.SetMovementFilter(collisionFilter.get());
         initialized = true;
     }
     scene->Render();
+    counter.Count();
     return GLBaseApp::MainLoop();
 }
 
 TG_Status MazeApp::RegularUpdate()
 {
     if( initialized ) {
+        scene->Light()[1].pos = mazeCamera.GetCamera().GetPosition();
         physics->ApplyWorldUpdate();
     }
     return GLBaseApp::RegularUpdate();
@@ -91,10 +108,9 @@ TG_Status MazeApp::RegularUpdate()
 
 void MazeApp::initializeBuffers()
 {
-    MazeSceneBuilder builder("./res/maze/maze.mz");
+    MazeSceneBuilder builder(materials, GetBackend());
     scene.reset(builder.CreateSceneAndGrid(*GetContext(), freeCamera.GetCamera(), *pipeline));
     physics.reset(builder.CreatePhysicsEngine());
-    collisionFilter.reset(builder.CreateCollisionFilter());
     std::unique_ptr<TG::IPhysicsObject> playerObjectFreeCam(new TG::PhysicsBox({1.0f, 0.5f, 1.0f}, {0.0f, 0.0f,  0.0f}, 0.3f));
     freeCamera.SetPhysicsObject(std::move(playerObjectFreeCam));
     std::unique_ptr<TG::IPhysicsObject> playerObject(new TG::PhysicsBox({1.0f, 0.5f, 1.0f}, {0.0f, 0.0f,  0.0f}, 2.0f));
@@ -108,8 +124,8 @@ void MazeApp::initializeBuffers()
 void MazeApp::initializePipeline()
 {
     assert(pipeline.get() == nullptr);
-    pipeline.reset(new TG::SimplePipeline(*GetContext(), "./res/shaders/rgb.vert.glsl",
-                                          "./res/shaders/rgb.frag.glsl"));
+    pipeline.reset(new TG::SimplePipeline(*GetContext(), "./res/shaders/pointLight.vert.glsl",
+                                          "./res/shaders/pointLight.frag.glsl"));
 }
 
 void MazeApp::switchCamera()

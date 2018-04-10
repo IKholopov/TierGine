@@ -17,6 +17,7 @@
 #pragma once
 
 #include <Model.h>
+#include <Material.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -52,6 +53,8 @@ public:
     virtual IPipeline* GetPipeline() const override { return pipeline; }
     virtual void SetPipeline(IPipeline* pipeline) override { this->pipeline = pipeline; }
 
+    void SetMaterial(IMaterial* material) { this->material = material; }
+
 private:
     glm::mat4 mat;
     glm::vec3 position;
@@ -61,6 +64,7 @@ private:
     TPolygonRenderStyle style;
     IMesh& mesh;
     IPipeline* pipeline;
+    IMaterial* material;
 
     void updateMat();
 };

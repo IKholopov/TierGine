@@ -19,6 +19,8 @@
 #include <Scene.h>
 #include <Camera.h>
 #include <Pipeline.h>
+#include <Light.h>
+#include <Material.h>
 #include <vector>
 
 namespace TierGine {
@@ -28,10 +30,15 @@ public:
     const char* const CameraProjectionName = "projectionMatrix";
     const char* const CameraViewName = "viewMatrix";
     const char* const ModelPositionName = "modelMatrix";
+    const char* const LightInfoName = "light";
+    const char* const MaterialInfoName = "material";
+    const char* const NormalToCameraMatrixName = "normalToCameraMatrix";
+
 
     SimpleScene(const ICamera& camera, IPipeline& defaultPipeline);
 
     void SetCamera(const ICamera* camera) { this->camera = camera; }
+    LightningScheme& Light() { return lights; }
 
     // IScene interface
     virtual void Add(std::unique_ptr<ISceneObject>& object) override;
@@ -40,9 +47,16 @@ public:
 
 private:
     std::vector<std::unique_ptr<ISceneObject>> objects;
+    LightningScheme lights;
+    MaterialInfo defaultMaterial;
+
     UniformVariable cameraProjection;
     UniformVariable cameraView;
+    UniformVariable normalToCameraMatrix;
     UniformVariable modelPosition;
+    UniformArray lightsVariable;
+    UniformVariable materialVariable;
+
     const ICamera* camera;
     IPipeline& defaultPipeline;
     IPipeline* activePipeline;

@@ -67,6 +67,7 @@ TG_Status BaseApp::Main()
             }
         }
     });
+
     while(!ShouldTerminate()) {
         TG_Status status = MainLoop();
         if( status != TG_Ok ) {

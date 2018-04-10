@@ -19,51 +19,33 @@
 #include <SimpleScene.h>
 #include <BasicFpsCamera.h>
 #include <MazeGrid.h>
+#include <Backend.h>
 #include <fstream>
 #include <unordered_map>
 
 namespace TG = TierGine;
 
-class CollisionFilter : public TG::IMovementFilter {
-public:
-      CollisionFilter(std::vector<std::vector<bool>> collision) :
-          collision(collision) {}
-
-      virtual glm::vec3 FilterPosition(glm::vec3& pos, const glm::vec3& prevPos) override;
-private:
-      std::vector<std::vector<bool>> collision;
-};
-
 class MazeSceneBuilder {
 public:
     constexpr static const char* const BlockName = "block";
 
-    MazeSceneBuilder(std::string path);
+    MazeSceneBuilder(std::vector<std::unique_ptr<TG::IMaterial>>& materials, TG::IBackend& backend);
     TG::SimpleScene* CreateSceneAndGrid(TG::IContext& context,
                             const TG::ICamera& camera,
                             TierGine::IPipeline& defaultPipeline);
     TG::PhysicsWorld* CreatePhysicsEngine();
-    CollisionFilter* CreateCollisionFilter();
 
 private:
-    struct Quad {
-        glm::vec3 Vertices[4];
-        glm::vec3 Normals[2];
-    };
-
-    struct Tile {
-        std::vector<Quad*> Quads;
-    };
-    std::unordered_map<std::string, std::unique_ptr<Quad>> quads;
-    std::unordered_map<std::string, std::unique_ptr<Tile>> tiles;
     std::vector<std::vector<std::string>> map;
     std::unique_ptr<Grid> grid;
     std::vector<std::vector<bool>> collision;
-    int width, height;
 
-    void processQuads(std::ifstream& file);
-    void processTiles(std::ifstream& file);
-    bool processTile(std::ifstream& file);
-    void processMap(std::ifstream& file);
-    bool processQuad(std::ifstream& file);
+    int width, height;
+    std::vector<std::unique_ptr<TG::IMaterial>>& materials;
+    TierGine::IBackend& backend;
+
+    TG::IMaterial* wallMaterial;
+    TG::IMaterial* floorMaterial;
+
+    void loadMaterials(TierGine::ITextureSampler* sampler, TierGine::IContext& context);
 };

@@ -30,20 +30,26 @@ struct LightInfo
     vec3 Ld;
     vec3 Ls;
 };
-uniform LightInfo light;
+uniform LightInfo light[2];
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexNormal;
+layout(location = 2) in vec2 vertexTexCoord;
 
 out vec3 normalCamSpace;
-out vec4 lightPosCamSpace;
+out vec4 lightPosCamSpace[2];
 out vec4 posCamSpace;
+out vec2 texCoord;
 
 void main()
 {
+    texCoord = vertexTexCoord;
+
     posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
     normalCamSpace = normalize(normalToCameraMatrix * vertexNormal);
-    lightPosCamSpace = viewMatrix * vec4(light.pos, 1.0);
+    for(int i = 0; i < 2; ++i) {
+        lightPosCamSpace[i] = viewMatrix * vec4(light[i].pos, 1.0);
+    }
 
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

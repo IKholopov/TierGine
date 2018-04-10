@@ -32,7 +32,8 @@ BasicModel::BasicModel(IMesh& mesh, glm::vec3 position, glm::vec3 rotation,
     mode(mode),
     style(style),
     mesh(mesh),
-    pipeline(nullptr)
+    pipeline(nullptr),
+    material(nullptr)
 {
     updateMat();
 }
@@ -45,7 +46,8 @@ BasicModel::BasicModel(const BasicModel&& other):
     mode(other.mode),
     style(other.style),
     mesh(other.mesh),
-    pipeline(other.pipeline)
+    pipeline(other.pipeline),
+    material(other.material)
 {
 }
 
@@ -76,6 +78,9 @@ void BasicModel::SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style
 void BasicModel::Draw()
 {
     mesh.Bind();
+    if(material != nullptr) {
+        material->Activate(pipeline);
+    }
     mesh.GetRenderer().RenderWithMode(mode, style);
 }
 

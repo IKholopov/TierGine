@@ -47,6 +47,9 @@ UniformVariable::TUniformType GetUniformType(GLenum type) {
     case GL_FLOAT_MAT4:
         return UniformVariable::UT_MAT_4;
         break;
+    case GL_SAMPLER_2D:
+        return UniformVariable::UT_INT;
+        break;
     default:
         assert(false);
         break;
@@ -88,6 +91,13 @@ void GLProgram::Build()
     for (GLint i = 0; i < count; i++)
     {
         glGetActiveUniform(programId, (GLuint)i, bufSize, &length, &size, &type, name);
+        std::string stringName = name;
+        if(stringName.find_first_of('.') != std::string::npos) {
+            std::string structName = stringName.substr(0, stringName.find_first_of('.'));
+            if(uniforms.find(structName) == uniforms.end()) {
+                uniforms.insert({structName, UniformVariable(this, UniformVariable::UT_USERSTRUCT, structName)});
+            }
+        }
         UniformVariable::TUniformType uniformType = GetUniformType(type);
         std::string strName(static_cast<char*>(name));
         auto var = UniformVariable(this, uniformType, strName);
@@ -104,7 +114,7 @@ UniformVariable GLProgram::GetUniformVariable(std::string name) const
 {
     auto variable = uniforms.find(name);
     if(variable == uniforms.end()) {
-        throw EngineException("Trying to assign non-existing uniform - " + name);
+        throw EngineException("Trying to get non-existing uniform - " + name);
     }
     return variable->second;
 }

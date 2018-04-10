@@ -28,7 +28,8 @@ namespace TierGine {
 class GLBaseApp : public BaseApp {
 public:
     GLBaseApp(const WindowGLFW::Config& config) :
-        window(config, new GLFWContextGL(window))
+        backend(new GLFWContextGL(window)),
+        window(config, backend)
     {
         Initializers().push_back(std::make_unique<GLFWInitializer>());
         Initializers().push_back(window.GetContextInitializer());
@@ -44,9 +45,11 @@ protected:
     virtual bool ShouldTerminate() const override { return window.ToClose(); }
 
     IContext* GetContext() const { return window.GetContext(); }
+    IBackend& GetBackend() const { return *backend; }
     InputProvider& GetInputProvider() { return window.GetInputProvider(); }
 
 private:
+    GLFWContextGL* backend;
     TierGine::WindowGLFW window;
 
 

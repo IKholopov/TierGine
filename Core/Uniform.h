@@ -18,6 +18,8 @@
 #pragma once
 
 #include <TierGine.CoreDefs.h>
+
+#include <vector>
 #include <assert.h>
 
 namespace TierGine {
@@ -28,12 +30,14 @@ class UniformVariable {
 public:
     enum TUniformType {
         UT_FLOAT,
+        UT_INT,
         UT_VEC_2,
         UT_VEC_3,
         UT_VEC_4,
         UT_MAT_2,
         UT_MAT_3,
         UT_MAT_4,
+        UT_USERSTRUCT,
         UT_INVALID
     };
 
@@ -60,5 +64,7 @@ private:
     TUniformType type;
     std::string name;
 };
+
+typedef std::vector<UniformVariable> UniformArray;
 
 }

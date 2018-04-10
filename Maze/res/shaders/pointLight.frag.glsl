@@ -17,6 +17,8 @@
 
 #version 400
 
+uniform sampler2D diffuseTex;
+
 struct LightInfo
 {
     vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
@@ -24,7 +26,7 @@ struct LightInfo
     vec3 Ld; //цвет и интенсивность диффузного света
     vec3 Ls; //цвет и интенсивность бликового света
 };
-uniform LightInfo light;
+uniform LightInfo light[2];
 
 struct MaterialInfo
 {
@@ -36,30 +38,37 @@ struct MaterialInfo
 uniform MaterialInfo material;
 
 in vec3 normalCamSpace; //нормаль в системе координат камеры (интерполирована между вершинами треугольника)
-in vec4 lightPosCamSpace; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
+in vec4 lightPosCamSpace[2]; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
 in vec4 posCamSpace; //координаты вершины в системе координат камеры (интерполированы между вершинами треугольника)
+in vec2 texCoord;
 
 out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-    vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //направление на источник света
-
-    vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции
-
-    float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
-
-    vec3 color = light.La * material.Ka + light.Ld * material.Kd * NdotL; //цвет вершины
-
-    if (NdotL > 0.0)
+    vec3 color = vec3(0.0f);
+    vec3 diffuseColor = texture(diffuseTex, texCoord).rgb;
+    for(int i = 0; i < 2; ++i)
     {
-        vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
-        vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
+        vec3 dist = lightPosCamSpace[i].xyz - posCamSpace.xyz;
+        vec3 lightDirCamSpace = normalize(dist); //направление на источник света
+        float distL2 = max(length(dist), 1.4);
+        vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции
 
-        float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну
-        blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
+        float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
-        color += light.Ls * material.Ks * blinnTerm;
+
+        color += diffuseColor * ( (light[i].La * material.Ka) / distL2 + (light[i].Ld * material.Kd * NdotL) / distL2 ); //цвет вершины
+        if (NdotL > 0.0)
+        {
+            vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
+            vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
+
+            float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну
+            blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
+
+            color += light[i].Ls * material.Ks * blinnTerm / distL2;
+        }
     }
 
     fragColor = vec4(color, 1.0); //просто копируем

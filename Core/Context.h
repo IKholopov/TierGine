@@ -14,10 +14,10 @@
    limitations under the License.
    ==============================================================================
 */
-
 #pragma once
 #include <Shader.h>
 #include <Pipeline.h>
+#include <Texture.h>
 #include <Mesh.h>
 
 namespace TierGine {
@@ -35,6 +35,12 @@ interface IContext {
 
     virtual IMesh* CreateMesh() = 0;
     virtual void DeleteMesh(const IMesh* mesh) = 0;
+
+    virtual ITexture* CreateTexture() = 0;
+    virtual void DeleteTexture(const ITexture* texture) = 0;
+
+    virtual ITextureSampler* CreateTextureSampler(const std::string& name) = 0;
+    virtual void DeleteTextureSampler(const ITextureSampler* texture) = 0;
 };
 
 }

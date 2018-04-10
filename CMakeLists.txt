@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 
 project(TierGine)
 
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${DEPENDENCIES_ROOT} )
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${DEPENDENCIES_ROOT} "${DEPENDENCIES_ROOT}/cmake/soil" )
 set(imgui_DIR "${DEPENDENCIES_ROOT}/lib/cmake/imgui")
+set(SOIL_DIR "${DEPENDENCIES_ROOT}/lib/cmake/soil")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/" )
+set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "${DEPENDENCIES_ROOT}/include/imgui ${DEPENDENCIES_ROOT}/include")
 
 if(MSVC)
   # Force to always compile with W4
@@ -21,14 +23,12 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
-if(NOT EXTERNAL_BUILD)
-find_package(GLEW)
+find_package(glew)
 find_package(glfw3)
 find_package(glm)
 find_package(assimp)
-find_package(SOIL)
+find_package(soil)
 find_package(imgui)
-endif()
 
 find_package(Threads REQUIRED)
 

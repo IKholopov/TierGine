@@ -24,13 +24,19 @@
 #include <MazePhysics.h>
 #include <glm/glm.hpp>
 
-std::tuple<TG::Tensor, TG::Tensor> GetMeshFromHorizontalCell(const HorizontalCell* entry) {
+struct MeshData {
+    TG::Tensor v, norm, uv;
+};
+
+
+MeshData GetMeshFromHorizontalCell(const HorizontalCell* entry) {
     Byte walls = entry->GetWalls();
     if((walls & (Floor | Ceiling)) == 0) {
-        return std::make_pair(TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr));
+        return { TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr)};
     }
     TG::Tensor vertices(0, 3, nullptr);
     TG::Tensor normals(0, 3, nullptr);
+    TG::Tensor uvs(0, 2, nullptr);
     if( walls & Floor) {
         float xLower = entry->GetLower().x;
         float xHigher = entry->GetHigher().x;
@@ -38,13 +44,13 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromHorizontalCell(const HorizontalCel
         float zLower = entry->GetLower().z;
         float zHigher = entry->GetHigher().z;
         vertices = vertices.Add(TG::CreateTensor(6, 3, {
-                                        xLower, y, zLower,
-                                        xHigher, y, zHigher,
                                         xLower, y, zHigher,
-
-                                        xHigher, y, zHigher,
                                         xLower, y, zLower,
-                                        xHigher, y, zLower
+                                        xHigher, y, zHigher,
+
+                                        xLower, y, zLower,
+                                        xHigher, y, zLower,
+                                        xHigher, y, zHigher
                                     }));
         normals = normals.Add(TG::CreateTensor(6, 3, {
                                                  0.0f, 1.0f, 0.0f,
@@ -53,6 +59,14 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromHorizontalCell(const HorizontalCel
                                                  0.0f, 1.0f, 0.0f,
                                                  0.0f, 1.0f, 0.0f,
                                                  0.0f, 1.0f, 0.0f,
+                                               }));
+        uvs = uvs.Add(TG::CreateTensor(6, 2, {
+                                                0.0f, zHigher,
+                                                 0.0f, 0.0f,
+                                                 xHigher, zHigher,
+                                                 0.0f, 0.0f,
+                                                 xHigher, 0.0f,
+                                                 xHigher, zHigher,
                                                }));
     }
     if( walls & Ceiling) {
@@ -78,14 +92,22 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromHorizontalCell(const HorizontalCel
                                                  0.0f, -1.0f, 0.0f,
                                                  0.0f, -1.0f, 0.0f,
                                                }));
+        uvs = uvs.Add(TG::CreateTensor(6, 2, {
+                                                 0.0f, 0.0f,
+                                                 0.0f, zHigher,
+                                                 xHigher, zHigher,
+                                                 0.0f, 0.0f,
+                                                 xHigher, zHigher,
+                                                 xHigher, 0.0f
+                                               }));
     }
-    return std::make_tuple(vertices, normals);
+    return { vertices, normals, uvs };
 }
 
-std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry) {
+MeshData GetMeshFromWallCell(const WalledEntry* entry) {
     Byte walls = entry->GetWalls();
     if((walls & (FrontWall | BackWall | LeftWall | RightWall)) == 0) {
-        return std::make_pair(TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr));
+        return {TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr)};
     }
     float x = entry->GetPosition().x;
     float y = entry->GetPosition().y;
@@ -93,6 +115,9 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
 
     TG::Tensor vertices(0, 3, nullptr);
     TG::Tensor normals(0, 3, nullptr);
+    TG::Tensor uvs(0, 2, nullptr);
+    float horOffset = (rand() % 4) / 4.0f;
+    float verOffset = (rand() % 3) / 3.0f;
     if(walls & FrontWall) {
         vertices = TG::CreateTensor(12, 3, {
                                         x + 0.4f, y + 0.0f, z + 0.6f,
@@ -126,6 +151,21 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                         1.0f, 0.0f, 0.0f,
                                         1.0f, 0.0f, 0.0f
                                    });
+        uvs = TG::CreateTensor(12, 2, {
+                                   horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                   horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                   horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                   horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                   horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                   horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+
+                                    horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                    horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                    horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                    horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                    horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                    horOffset + 1.0f / 4, verOffset + 0.5f / 3
+                               });
 
     } else {
         vertices = TG::CreateTensor(6, 3, {
@@ -145,24 +185,32 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                         0.0f, 0.0f, 1.0f,
                                         0.0f, 0.0f, 1.0f
                                    });
+        uvs = TG::CreateTensor(6, 2, {
+                                    horOffset + 0.0f / 4, verOffset + -0.1f / 3,
+                                    horOffset + 1.0f / 4, verOffset + -0.1f / 3,
+                                    horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                    horOffset + 0.0f / 4, verOffset + -0.1f / 3,
+                                    horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                    horOffset + 0.0f / 4, verOffset + 0.1f / 3
+                               });
     }
     if(walls & BackWall) {
         vertices = vertices.Add(TG::CreateTensor(12, 3, {
-                                                   x + 0.4f, y + 0.0f, z + 0.4f,
                                                    x + 0.4f, y + 0.0f, z + 0.0f,
                                                    x + 0.4f, y + 1.0f, z + 0.4f,
+                                                   x + 0.4f, y + 0.0f, z + 0.4f,
 
-                                                   x + 0.4f, y + 1.0f, z + 0.4f,
                                                    x + 0.4f, y + 0.0f, z + 0.0f,
                                                    x + 0.4f, y + 1.0f, z + 0.0f,
+                                                   x + 0.4f, y + 1.0f, z + 0.4f,
 
+                                                   x + 0.6f, y + 0.0f, z + 0.0f,
                                                    x + 0.6f, y + 0.0f, z + 0.4f,
                                                    x + 0.6f, y + 1.0f, z + 0.4f,
-                                                   x + 0.6f, y + 0.0f, z + 0.0f,
 
-                                                   x + 0.6f, y + 1.0f, z + 0.4f,
                                                    x + 0.6f, y + 1.0f, z + 0.0f,
-                                                   x + 0.6f, y + 0.0f, z + 0.0f
+                                                   x + 0.6f, y + 0.0f, z + 0.0f,
+                                                   x + 0.6f, y + 1.0f, z + 0.4f
                                                 }));
         normals = normals.Add(TG::CreateTensor(12, 3, {
                                                    -1.0f, 0.0f, 0.0f,
@@ -179,6 +227,21 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                                     1.0f, 0.0f, 0.0f,
                                                     1.0f, 0.0f, 0.0f
                                                }));
+        uvs = uvs.Add(TG::CreateTensor(12, 2, {
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3,
+
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3
+                               }));
     } else {
         vertices = vertices.Add(TG::CreateTensor(6, 3, {
                                                    x + 0.6f, y + 0.0f, z + 0.4f,
@@ -197,16 +260,24 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                                    0.0f, 0.0f, -1.0f,
                                                    0.0f, 0.0f, -1.0f
                                                }));
+        uvs = uvs.Add(TG::CreateTensor(6, 2, {
+                                           horOffset + 0.0f / 4, 0.1f / 3,
+                                           horOffset + 1.0f / 4, 0.1f / 3,
+                                           horOffset + 0.0f / 4, -0.1f / 3,
+                                           horOffset + 0.0f / 4, -0.1f / 3,
+                                           horOffset + 1.0f / 4, 0.1f / 3,
+                                           horOffset + 1.0f / 4, -0.1f / 3
+                               }));
     }
     if(walls & RightWall) {
         vertices = vertices.Add(TG::CreateTensor(12, 3, {
-                                                   x + 0.6f, y + 0.0f, z + 0.4f,
                                                    x + 1.0f, y + 0.0f, z + 0.4f,
                                                    x + 1.0f, y + 1.0f, z + 0.4f,
+                                                   x + 0.6f, y + 0.0f, z + 0.4f,
 
+                                                   x + 0.6f, y + 0.0f, z + 0.4f,
                                                    x + 1.0f, y + 1.0f, z + 0.4f,
                                                    x + 0.6f, y + 1.0f, z + 0.4f,
-                                                   x + 0.6f, y + 0.0f, z + 0.4f,
 
                                                    x + 1.0f, y + 0.0f, z + 0.6f,
                                                    x + 0.6f, y + 0.0f, z + 0.6f,
@@ -231,6 +302,21 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                                     0.0f, 0.0f, 1.0f,
                                                     0.0f, 0.0f, 1.0f
                                                }));
+        uvs = uvs.Add(TG::CreateTensor(12, 2, {
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+
+                                            horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                            horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                            horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                            horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+                                            horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                            horOffset + 1.0f / 4, verOffset + 0.1f / 3
+                               }));
     } else {
         vertices = vertices.Add(TG::CreateTensor(6, 3, {
                                                    x + 0.6f, y + 0.0f, z + 0.4f,
@@ -249,16 +335,24 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                                    1.0f, 0.0f, 0.0f,
                                                    1.0f, 0.0f, 0.0f
                                                }));
+        uvs = uvs.Add(TG::CreateTensor(6, 2, {
+                                           horOffset + 0.0f / 4, verOffset + -0.1f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 1.0f / 4, verOffset + -0.1f / 3,
+                                           horOffset + 0.0f / 4, verOffset + -0.1f / 3
+                               }));
     }
     if(walls & LeftWall) {
         vertices = vertices.Add(TG::CreateTensor(12, 3, {
-                                                   x + 0.0f, y + 0.0f, z + 0.4f,
                                                    x + 0.4f, y + 0.0f, z + 0.4f,
                                                    x + 0.4f, y + 1.0f, z + 0.4f,
+                                                   x + 0.0f, y + 0.0f, z + 0.4f,
 
+                                                   x + 0.0f, y + 0.0f, z + 0.4f,
                                                    x + 0.4f, y + 1.0f, z + 0.4f,
                                                    x + 0.0f, y + 1.0f, z + 0.4f,
-                                                   x + 0.0f, y + 0.0f, z + 0.4f,
 
                                                    x + 0.4f, y + 0.0f, z + 0.6f,
                                                    x + 0.0f, y + 0.0f, z + 0.6f,
@@ -283,6 +377,21 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                                     0.0f, 0.0f, 1.0f,
                                                     0.0f, 0.0f, 1.0f
                                                }));
+        uvs = uvs.Add(TG::CreateTensor(12, 2, {
+                                           horOffset + 0.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.5f / 3,
+
+                                           horOffset + 0.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.9f / 3,
+                                           horOffset + 0.0f / 4, verOffset + 0.5f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.5f / 3
+                               }));
     } else {
         vertices = vertices.Add(TG::CreateTensor(6, 3, {
                                                    x + 0.4f, y + 0.0f, z + 0.6f,
@@ -301,8 +410,16 @@ std::tuple<TG::Tensor, TG::Tensor> GetMeshFromWallCell(const WalledEntry* entry)
                                                    -1.0f, 0.0f, 0.0f,
                                                    -1.0f, 0.0f, 0.0f
                                                }));
+        uvs = uvs.Add(TG::CreateTensor(6, 2, {
+                                           horOffset + 0.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 0.0f / 4, verOffset + -0.1f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 1.0f / 4, verOffset + 0.1f / 3,
+                                           horOffset + 0.0f / 4, verOffset + -0.1f / 3,
+                                           horOffset + 1.0f / 4, verOffset + -0.1f / 3
+                               }));
     }
-    return std::make_tuple(vertices, normals);
+    return {vertices, normals, uvs};
 }
 
 namespace {
@@ -434,129 +551,82 @@ void CopyVec3(glm::vec3& from, float* to, int& offset) {
 
 }
 
-bool MazeSceneBuilder::processQuad(std::ifstream& file)
-{
-    std::string tag;
-    file >> tag;
-    if(tag.compare("</quads>") == 0) {
-        return false;
-    }
-
-    std::string name = tag.substr(tag.find_first_of("<")+1, tag.find_first_of(">")-tag.find_first_of("<")-1);
-    Quad quad;
-    for(int i = 0; i < 4; ++i) {
-        quad.Vertices[i] = ProcessVec(file);
-    }
-    for(int i = 0; i < 2; ++i) {
-        quad.Normals[i] = ProcessVec(file);
-    }
-    quads.insert({name, std::make_unique<Quad>(quad)});
-    file >> tag;
-    return true;
-}
-
-MazeSceneBuilder::MazeSceneBuilder(std::string path) :
+MazeSceneBuilder::MazeSceneBuilder(std::vector<std::unique_ptr<TG::IMaterial>>& materials,
+                                   TierGine::IBackend& backend) :
     width(0),
-    height(0)
+    height(0),
+    materials(materials),
+    backend(backend),
+    wallMaterial(nullptr),
+    floorMaterial(nullptr)
 {
-    try {
-        std::ifstream file(path);
-        if(!file.is_open()) {
-            throw std::ifstream::failure("Failed to open file");
-        }
-        std::string tag;
-        bool mapProcessed = false;
-        while(file.peek() != EOF && ! mapProcessed ) {
-            file >> tag;
-            if(tag.compare("<quads>") == 0) {
-                processQuads(file);
-            } else if(tag.compare("<tiles>") == 0) {
-                processTiles(file);
-            } else if(tag.compare("<map>") == 0) {
-                processMap(file);
-                mapProcessed = true;
-            } else {
-                assert(false);
-            }
-        }
-
-    } catch (std::ifstream::failure& e) {
-        TG::Log::Error() << "Failed to read maze file " << path << std::endl;
-        throw;
-    }
 }
 
 TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& context,
                                           const TG::ICamera& camera,
                                           TG::IPipeline& defaultPipeline)
 {
+    loadMaterials(context.CreateTextureSampler("diffuseMap"), context);
     std::unique_ptr<TG::SimpleScene> scene(new TG::SimpleScene(camera, defaultPipeline));
-    TG::IMesh* mesh = context.CreateMesh();
-    TG::Tensor vertices(0, 3, nullptr);
-    TG::Tensor normals(0, 3, nullptr);
-    int n = 42;
-    grid.reset(new Grid(n, 1, n));
-    for(int i = 0; i < n; ++i) {
-        for(int j = 0; j < n; ++j) {
-            (*grid)[i][0][j].reset(new WalledEntry(i, 0, j, FrontWall | BackWall | LeftWall | RightWall ));
+    {
+        TG::IMesh* mesh = context.CreateMesh();
+        TG::Tensor vertices(0, 3, nullptr);
+        TG::Tensor normals(0, 3, nullptr);
+        TG::Tensor uvs(0, 2, nullptr);
+        int n = 42;
+        grid.reset(new Grid(n, 1, n));
+        for(int i = 0; i < n; ++i) {
+            for(int j = 0; j < n; ++j) {
+                (*grid)[i][0][j].reset(new WalledEntry(i, 0, j, FrontWall | BackWall | LeftWall | RightWall ));
+            }
         }
+        ProcessGrid(*grid.get());
+        for(int i = 0; i < n; ++i) {
+            for(int j = 0; j < n; ++j) {
+                auto [v, norm, uv] = GetMeshFromWallCell(static_cast<const WalledEntry*>((*grid)[i][0][j].get()));
+                vertices = vertices.Add(v);
+                normals = normals.Add(norm);
+                uvs = uvs.Add(uv);
+            }
+        }
+
+        std::unique_ptr<TG::BasicModel> basicModel(new TG::BasicModel(*mesh));
+        basicModel->SetMaterial(wallMaterial);
+        basicModel->LoadFromTensors(vertices, normals, uvs);
+        std::unique_ptr<TG::ISceneObject> model(basicModel.release());
+        model->SetRenderingMode(TG::RM_FILL, TG::PRS_FRONT);
+        scene->Add(model);
     }
-    ProcessGrid(*grid.get());
-    for(int i = 0; i < n; ++i) {
-        for(int j = 0; j < n; ++j) {
-            auto [v, norm] = GetMeshFromWallCell(static_cast<const WalledEntry*>((*grid)[i][0][j].get()));
+    {
+        TG::IMesh* mesh = context.CreateMesh();
+        TG::Tensor vertices(0, 3, nullptr);
+        TG::Tensor normals(0, 3, nullptr);
+        TG::Tensor uvs(0, 2, nullptr);
+
+        for(int i = 0; i <= grid->YLength(); ++i) {
+            auto [v, norm, uv] = GetMeshFromHorizontalCell(grid->Horizontal(i).get());
             vertices = vertices.Add(v);
             normals = normals.Add(norm);
+            uvs = uvs.Add(uv);
         }
-    }
-    for(int i = 0; i <= grid->YLength(); ++i) {
-        auto [v, norm] = GetMeshFromHorizontalCell(grid->Horizontal(i).get());
-        vertices = vertices.Add(v);
-        normals = normals.Add(norm);
-    }
 
-    mesh->AddAtribute(0, vertices);
-    mesh->AddAtribute(1, normals);
-    std::unique_ptr<TG::ISceneObject> model(new TG::BasicModel(*mesh));
-    model->SetRenderingMode(TG::RM_FILL, TG::PRS_FRONT);
-    scene->Add(model);
-    /*std::unordered_map<std::string, TG::IMesh*> meshes;
-    for(auto tileIt = tiles.begin(); tileIt != tiles.end(); ++tileIt) {
-        Tile& tile = *tileIt->second.get();
-        TG::IMesh* mesh = context.CreateMesh();
-        float* verticesValues = new float[tile.Quads.size()*6*3];
-        int positionVertices = 0;
-        float* normalsValues = new float[tile.Quads.size()*6*3];
-        int positionNormals = 0;
-        for(auto quad: tile.Quads) {
-            CopyVec3(quad->Vertices[0], verticesValues, positionVertices);
-            CopyVec3(quad->Vertices[2], verticesValues, positionVertices);
-            CopyVec3(quad->Vertices[1], verticesValues, positionVertices);
-            CopyVec3(quad->Vertices[2], verticesValues, positionVertices);
-            CopyVec3(quad->Vertices[0], verticesValues, positionVertices);
-            CopyVec3(quad->Vertices[3], verticesValues, positionVertices);
-
-            CopyVec3(quad->Normals[0], normalsValues, positionNormals);
-            CopyVec3(quad->Normals[0], normalsValues, positionNormals);
-            CopyVec3(quad->Normals[0], normalsValues, positionNormals);
-            CopyVec3(quad->Normals[1], normalsValues, positionNormals);
-            CopyVec3(quad->Normals[1], normalsValues, positionNormals);
-            CopyVec3(quad->Normals[1], normalsValues, positionNormals);
-        }
-        TG::Tensor vertices = TG::CreateTensor<float>(tile.Quads.size()*6, 3, verticesValues);
-        TG::Tensor normals = TG::CreateTensor<float>(tile.Quads.size()*6, 3, normalsValues);
-        mesh->AddAtribute(0, vertices);
-        mesh->AddAtribute(1, normals);
-        meshes.insert({tileIt->first, mesh});
+        std::unique_ptr<TG::BasicModel> basicModel(new TG::BasicModel(*mesh));
+        basicModel->SetMaterial(floorMaterial);
+        basicModel->LoadFromTensors(vertices, normals, uvs);
+        std::unique_ptr<TG::ISceneObject> model(basicModel.release());
+        model->SetRenderingMode(TG::RM_FILL, TG::PRS_FRONT);
+        scene->Add(model);
     }
-    for(int i = 0; i < height; ++i) {
-        for(int j = 0; j < width; ++j) {
-            std::unique_ptr<TG::ISceneObject> model(new TG::BasicModel(*meshes.find(map.at(i).at(j))->second));
-            model->SetPosition(glm::vec3(-i-1, 0.0f, j));
-            model->SetRenderingMode(TG::RM_FILL, TG::PRS_FRONT);
-            scene->Add(model);
-        }
-    }*/
+    TG::LightInfo light;
+    light.pos = glm::vec3(20.0f, 0.7f, 20.0f);
+    light.La = glm::vec3(0.3f, 0.3f, 0.3f);
+    light.Ld = glm::vec3(0.6f, 0.6f, 0.6f);
+    light.Ls = glm::vec3(0.1f, 0.1f, 0.1f);
+
+    scene->Light().push_back(light);
+    scene->Light().push_back(light);
+
+
     return scene.release();
 }
 
@@ -566,117 +636,23 @@ TierGine::PhysicsWorld* MazeSceneBuilder::CreatePhysicsEngine()
     return new MazePhysicsEngine(std::move(grid));
 }
 
-CollisionFilter*MazeSceneBuilder::CreateCollisionFilter()
+void MazeSceneBuilder::loadMaterials(TG::ITextureSampler* sampler, TG::IContext& context)
 {
-    return new CollisionFilter(this->collision);
-}
+    materials.push_back(std::move(backend.CreateMaterial(sampler)));
+    wallMaterial = materials[0].get();
+    auto wallTexture = context.CreateTexture();
+    wallTexture->LoadFromPath("res/textures/wall.jpg");
+    auto wallNormal = context.CreateTexture();
+    wallNormal->LoadFromPath("res/textures/wall_norm.jpg");
+    wallMaterial->SetTexture(wallTexture);
+    wallMaterial->SetNormalMap(wallNormal);
 
-void MazeSceneBuilder::processQuads(std::ifstream& file)
-{
-    while(processQuad(file))
-    {
-    }
-}
-
-void MazeSceneBuilder::processTiles(std::ifstream& file)
-{
-    while(processTile(file))
-    {
-    }
-}
-
-bool MazeSceneBuilder::processTile(std::ifstream& file)
-{
-    std::string tag;
-    file >> tag;
-    if(tag.compare("</tiles>") == 0) {
-        return false;
-    }
-    std::string tileName = tag.substr(tag.find_first_of("<")+1, tag.find_first_of(">")-1);
-    assert(tileName.compare(BlockName) != 0);
-    Tile tile;
-    file >> tag;
-    while(tag.size() > 0) {
-        std::string name = tag.substr(tag.find_first_of("<")+1, tag.find_first_of("/")-tag.find_first_of("<")-1);
-        assert(quads.find(name) != quads.end());
-        tag = tag.substr(tag.find_first_of(">")+1);
-        tile.Quads.push_back(quads.find(name)->second.get());
-    }
-    file >> tag;
-    tiles.insert({tileName, std::make_unique<Tile>(tile)});
-    return true;
-}
-
-void MazeSceneBuilder::processMap(std::ifstream& file)
-{
-    std::string tag;
-    file >> tag;
-    assert(tag.compare("<size>") == 0);
-    file >> width >> height;
-    file >> tag;
-    assert(tag.compare("</size>") == 0);
-    tag = "";
-    for(int i = 0; i < height; ++i) {
-        map.push_back(std::vector<std::string>());
-        collision.push_back(std::vector<bool>());
-        if(tag.size() == 0) {
-            file >> tag;
-        }
-        for(int j = 0; j < width; ++j) {
-            std::string name;
-            name = tag.substr(tag.find_first_of("<")+1, tag.find_first_of("/")-tag.find_first_of("<")-1);
-            assert(tiles.find(name) != tiles.end() || name.compare(BlockName) == 0);
-            tag = tag.substr(tag.find_first_of(">")+1);
-            map[i].push_back(name);
-            name = tag.substr(tag.find_first_of("<")+1, tag.find_first_of("/")-tag.find_first_of("<")-1);
-            assert(name.compare("b") == 0 || name.compare("w") == 0);
-            tag = tag.substr(tag.find_first_of(">")+1);
-            collision[i].push_back(name.compare("w") == 0);
-            if(tag.size() == 0) {
-                file >> tag;
-            }
-        }
-    }
-    file >> tag;
-    assert(tag.compare("</map>") == 0);
-}
-
-glm::vec3 CollisionFilter::FilterPosition(glm::vec3& pos, const glm::vec3& prevPos)
-{
-    float offset = 0.15f;
-    glm::vec3 oldPos = pos;
-    oldPos[0] = -oldPos[0];
-    oldPos[1] = 0.5f;
-    if(oldPos[0] < 0.0f + offset) {
-        oldPos[0] = 0.0f + offset;
-    }
-    if(oldPos[2] < 0.0f + offset) {
-        oldPos[2] = 0.0f + offset;
-    }
-    if(oldPos[0] > collision.size() - offset) {
-        oldPos[0] = collision.size() - offset;
-    }
-    if(oldPos[2] > collision[0].size() - offset) {
-        oldPos[2] = collision[0].size() - offset;
-    }
-    float deltas[] = {offset, -offset};
-    for(int i = 0; i < 2; ++i) {
-        for(int j = 0; j < 2; ++j) {
-            float x = oldPos[0]+deltas[i];
-            float y = oldPos[2]+deltas[j];
-            if(static_cast<int>(x) >= 0 && static_cast<int>(x) < collision.size() &&
-                    static_cast<int>(y) >= 0 && static_cast<int>(y) < collision[0].size()) {
-                        if(!collision.at(static_cast<int>(x)).at(static_cast<int>(y))) {
-                            if(static_cast<int>(x) != static_cast<int>(-prevPos[0])) {
-                                oldPos[0] = -prevPos[0];
-                            }
-                            if(static_cast<int>(y) != static_cast<int>(prevPos[2])) {
-                                oldPos[2] = prevPos[2];
-                            }
-                        }
-            }
-        }
-    }
-    oldPos[0] = -oldPos[0];
-    return oldPos;
+    materials.push_back(std::move(backend.CreateMaterial(sampler)));
+    floorMaterial = materials[1].get();
+    auto floorTexture = context.CreateTexture();
+    floorTexture->LoadFromPath("res/textures/floor.jpg");
+    auto floorNormal = context.CreateTexture();
+    floorNormal->LoadFromPath("res/textures/floor_norm.jpg");
+    floorMaterial->SetTexture(floorTexture);
+    floorMaterial->SetNormalMap(floorNormal);
 }

@@ -15,6 +15,7 @@
    ==============================================================================
 */
 #include <SimpleScene.h>
+#include <GL/gl.h>
 
 namespace TierGine {
 
@@ -25,6 +26,11 @@ SimpleScene::SimpleScene(const ICamera& camera, IPipeline& defaultPipeline) :
     pipelineInitialized(false)
 {
     assertPipelineUniforms( defaultPipeline.GetUniformVariables() );
+
+    defaultMaterial.Ka = glm::vec3(1.0f, 1.0f, 0.0f);
+    defaultMaterial.Kd = glm::vec3(1.0f, 1.0f, 0.0f);
+    defaultMaterial.Ks = glm::vec3(1.0f, 1.0f, 1.0f);
+    defaultMaterial.shininess = 128.0f;
 }
 
 void SimpleScene::Add(std::unique_ptr<ISceneObject>& object)
@@ -37,6 +43,7 @@ void SimpleScene::Add(std::unique_ptr<ISceneObject>& object)
 
 void SimpleScene::Render()
 {
+    pipelineInitialized = false;
     if(activePipeline == nullptr) {
         activatePipeline(&defaultPipeline);
     }
@@ -44,22 +51,30 @@ void SimpleScene::Render()
         IPipeline* objPipeline = (*obj)->GetPipeline();
         if(objPipeline != nullptr && objPipeline != activePipeline) {
             activatePipeline(objPipeline);
-        } else if(objPipeline == nullptr) {
+        } else if(objPipeline == nullptr && activePipeline != &defaultPipeline ) {
             activatePipeline(&defaultPipeline);
         }
+        const auto pos = (*obj)->GetPositionTransformation();
+        const TierGine::CameraData projections = camera->GetCameraProjections();
         if(!pipelineInitialized) {
-            const TierGine::CameraData projections = camera->GetCameraProjections();
             cameraView.Set(projections.View);
             cameraProjection.Set(projections.Projection);
             pipelineInitialized = true;
         }
-        modelPosition.Set((*obj)->GetPositionTransformation());
+        auto transposed = glm::transpose(glm::inverse(glm::mat3(projections.View * pos)));
+        normalToCameraMatrix.Set(transposed);
+        for(int i = 0; i < 2; ++i){
+            lightsVariable[i].Set(lights[i]);
+        }
+        materialVariable.Set(defaultMaterial);
+        modelPosition.Set(pos);
         (*obj)->Draw();
     }
 }
 
 void SimpleScene::Update()
 {
+
 }
 
 void SimpleScene::assertPipelineUniforms(const std::unordered_map<std::string, UniformVariable>& variables)
@@ -77,6 +92,11 @@ void SimpleScene::activatePipeline(IPipeline* pipeline)
     cameraView = pipeline->GetUniformVariable(CameraViewName);
     cameraProjection = pipeline->GetUniformVariable(CameraProjectionName);
     modelPosition = pipeline->GetUniformVariable(ModelPositionName);
+    for(int i = 0; i < 2; ++i) {
+        lightsVariable.push_back(pipeline->GetUniformVariable(std::string(LightInfoName) + "[" + std::to_string(i) + "]"));
+    }
+    materialVariable = pipeline->GetUniformVariable(MaterialInfoName);
+    normalToCameraMatrix = pipeline->GetUniformVariable(NormalToCameraMatrixName);
 }
 
 

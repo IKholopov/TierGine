@@ -23,14 +23,16 @@
 
 #include <GL/glew.h>
 #include <Context.h>
+#include <Backend.h>
 #include <WindowGLFW.h>
 #include <GLShader.h>
 #include <GLProgram.h>
+#include <GLTexture.h>
 #include <GLMesh.h>
 
 namespace TierGine {
 
-class GLFWContextGL : public IContext {
+class GLFWContextGL : public IContext, public IBackend {
 public:
     GLFWContextGL(WindowGLFW& window) : window(window) {}
 
@@ -47,11 +49,22 @@ public:
     virtual IMesh* CreateMesh() override;
     virtual void DeleteMesh(const IMesh* mesh) override;
 
+    virtual ITexture* CreateTexture() override;
+    virtual void DeleteTexture(const ITexture* texture) override;
+
+    virtual ITextureSampler* CreateTextureSampler(const std::string& name) override;
+    virtual void DeleteTextureSampler(const ITextureSampler* sampler) override;
+
+    // IBackend interface
+    virtual std::unique_ptr<IMaterial> CreateMaterial(ITextureSampler* sampler) override;
+
 private:
     WindowGLFW& window;
     std::unordered_map<const IShader*, std::unique_ptr<GLShader>> shaders;
     std::unordered_map<const IPipeline*, std::unique_ptr<GLProgram>> pipelines;
     std::unordered_map<const IMesh*, std::unique_ptr<GLMesh>> meshes;
+    std::unordered_map<const ITexture*, std::unique_ptr<GLTexture>> textures;
+    std::unordered_map<const ITextureSampler*, std::unique_ptr<GLTextureSampler>> textureSamplers;
 };
 
 }

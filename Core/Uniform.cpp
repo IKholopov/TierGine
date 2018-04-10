@@ -89,7 +89,6 @@ UniformVariable::UniformVariable():
     pipeline(nullptr),
     type(UT_INVALID)
 {
-
 }
 
 UniformVariable::UniformVariable(const UniformVariable&& other) :
