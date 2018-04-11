@@ -22,20 +22,13 @@
 namespace TierGine {
 
 template<>
-void UniformVariable::Set<const MaterialInfo>(const MaterialInfo& value)
+void UniformVariable::Set<MaterialInfo>(const MaterialInfo& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name + ".Ka", CreateTensor(value.Ka));
     pipeline->SetUniformVariable(name + ".Kd", CreateTensor(value.Kd));
     pipeline->SetUniformVariable(name + ".Ks", CreateTensor(value.Ks));
     pipeline->SetUniformVariable(name + ".shininess", CreateTensor(value.shininess));
-}
-
-template<>
-void UniformVariable::Set<MaterialInfo>(MaterialInfo& value)
-{
-    const auto& val = value;
-    Set(val);
 }
 
 }

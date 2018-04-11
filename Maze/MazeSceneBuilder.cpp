@@ -604,8 +604,33 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
             basicModel->AddTangentTensors(tan, bitan);
             std::unique_ptr<TG::ISceneObject> model(basicModel.release());
             model->SetRenderingMode(TG::RM_FILL, TG::PRS_FRONT);
+            model->SetPipeline(&defaultPipeline, defaultPipeline.GetUniformVariable("diffuseTex"),
+                    defaultPipeline.GetUniformVariable("normalTex"),
+                    defaultPipeline.GetUniformVariable("material"));
             scene->Add(model);
         }
+    }
+    {
+        TG::IMesh* mesh = context.CreateMesh();
+        TG::Tensor vertices(0, 3, nullptr);
+        TG::Tensor normals(0, 3, nullptr);
+        TG::Tensor uvs(0, 2, nullptr);
+
+        auto [v, norm, uv] = GetMeshFromHorizontalCell(grid->Horizontal(0).get());
+        vertices = vertices.Add(v);
+        normals = normals.Add(norm);
+        uvs = uvs.Add(uv);
+        auto [tan, bitan] = TG::TBN::CalculateTangentAndBitangent(vertices, uvs);
+        std::unique_ptr<TG::BasicModel> basicModel(new TG::BasicModel(*mesh));
+        basicModel->SetMaterial(floorMaterial);
+        basicModel->LoadFromTensors(vertices, normals, uvs);
+        basicModel->AddTangentTensors(tan, bitan);
+        std::unique_ptr<TG::ISceneObject> model(basicModel.release());
+        model->SetRenderingMode(TG::RM_FILL, TG::PRS_FRONT);
+        model->SetPipeline(&defaultPipeline, defaultPipeline.GetUniformVariable("diffuseTex"),
+                            defaultPipeline.GetUniformVariable("normalTex"),
+                defaultPipeline.GetUniformVariable("material"));
+        scene->Add(model);
     }
     {
         TG::IMesh* mesh = context.CreateMesh();
@@ -621,18 +646,21 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
         }
         auto [tan, bitan] = TG::TBN::CalculateTangentAndBitangent(vertices, uvs);
         std::unique_ptr<TG::BasicModel> basicModel(new TG::BasicModel(*mesh));
-        basicModel->SetMaterial(floorMaterial);
+        basicModel->SetMaterial(ceilingMaterial);
         basicModel->LoadFromTensors(vertices, normals, uvs);
         basicModel->AddTangentTensors(tan, bitan);
         std::unique_ptr<TG::ISceneObject> model(basicModel.release());
         model->SetRenderingMode(TG::RM_FILL, TG::PRS_FRONT);
+        model->SetPipeline(&defaultPipeline, defaultPipeline.GetUniformVariable("diffuseTex"),
+                            defaultPipeline.GetUniformVariable("normalTex"),
+                    defaultPipeline.GetUniformVariable("material"));
         scene->Add(model);
     }
     TG::LightInfo light;
     light.pos = glm::vec3(20.0f, 0.7f, 20.0f);
-    light.La = glm::vec3(0.5f, 0.5f, 0.5f);
+    light.La = glm::vec3(0.8f, 0.8f, 0.8f);
     light.Ld = glm::vec3(0.5f, 0.5f, 0.5f);
-    light.Ls = glm::vec3(0.5f, 0.5f, 0.5f);
+    light.Ls = glm::vec3(0.4f, 0.4f, 0.4f);
 
     scene->Light().push_back(light);
     scene->Light().push_back(light);
@@ -659,6 +687,23 @@ void MazeSceneBuilder::loadMaterials(TG::ITextureSampler* sampler, TG::IContext&
     textures.insert({"res/textures/floor_norm.jpg", floorNormal});
     floorMaterial->SetTexture(floorTexture);
     floorMaterial->SetNormalMap(floorNormal);
+    floorMaterial->GetMaterialInfo().Ka = glm::vec3(0.8f, 0.8f, 0.8f);
+    floorMaterial->GetMaterialInfo().Kd = glm::vec3(0.4f, 0.4f, 0.4f);
+    floorMaterial->GetMaterialInfo().Ks = glm::vec3(0.4f, 0.4f, 0.4f);
+    floorMaterial->GetMaterialInfo().shininess = 10.0f;
+    materials.push_back(std::move(backend.CreateMaterial(sampler)));
+    ceilingMaterial = materials[1].get();
+    auto ceilTexture = context.CreateTexture();
+    ceilTexture->LoadFromPath("res/textures/ceil.jpg");
+    textures.insert({"res/textures/ceil.jpg", ceilTexture});
+    auto ceilNormal = context.CreateTexture();
+    ceilNormal->LoadFromPath("res/textures/ceil_norm.jpg");
+    textures.insert({"res/textures/ceil_norm.jpg", ceilNormal});
+    ceilingMaterial->SetTexture(ceilTexture);
+    ceilingMaterial->SetNormalMap(ceilNormal);
+    ceilingMaterial->GetMaterialInfo().Ka = glm::vec3(0.2f);
+    ceilingMaterial->GetMaterialInfo().Kd = glm::vec3(0.3f);
+    ceilingMaterial->GetMaterialInfo().Ks = glm::vec3(0.4f);
 
     for(auto file = materialFiles.begin(); file != materialFiles.end(); ++file) {
         loadMaterial(sampler, context, *file);
@@ -689,6 +734,9 @@ void MazeSceneBuilder::loadMaterial(TierGine::ITextureSampler* sampler, TierGine
     }
     wallMaterial->SetTexture(wallTexture);
     wallMaterial->SetNormalMap(wallNormal);
-    wallMaterial->GetMaterialInfo().shininess = 128.0f;
+    wallMaterial->GetMaterialInfo().Ka = glm::vec3(0.8f, 0.8f, 0.8f);
+    wallMaterial->GetMaterialInfo().Kd = glm::vec3(0.4f, 0.4f, 0.4f);
+    wallMaterial->GetMaterialInfo().Ks = glm::vec3(0.4f, 0.4f, 0.4f);
+    wallMaterial->GetMaterialInfo().shininess = 50.0f;
     wallMaterials.push_back(wallMaterial);
 }

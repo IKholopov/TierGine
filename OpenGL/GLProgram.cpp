@@ -28,31 +28,27 @@ UniformVariable::TUniformType GetUniformType(GLenum type) {
     switch (type) {
     case GL_FLOAT:
         return UniformVariable::UT_FLOAT;
-        break;
+    case GL_BOOL:
+        return UniformVariable::UT_BOOL;
+    case GL_INT:
+        return UniformVariable::UT_INT;
     case GL_FLOAT_VEC2:
         return UniformVariable::UT_VEC_2;
-        break;
     case GL_FLOAT_VEC3:
         return UniformVariable::UT_VEC_3;
-        break;
     case GL_FLOAT_VEC4:
         return UniformVariable::UT_VEC_4;
-        break;
     case GL_FLOAT_MAT2:
         return UniformVariable::UT_MAT_2;
-        break;
     case GL_FLOAT_MAT3:
         return UniformVariable::UT_MAT_3;
-        break;
     case GL_FLOAT_MAT4:
         return UniformVariable::UT_MAT_4;
-        break;
     case GL_SAMPLER_2D:
         return UniformVariable::UT_INT;
-        break;
     default:
         assert(false);
-        break;
+        return UniformVariable::UT_INVALID;
     }
 }
 
@@ -90,7 +86,7 @@ void GLProgram::Build()
     glGetProgramiv(programId, GL_ACTIVE_UNIFORMS, &count);
     for (GLint i = 0; i < count; i++)
     {
-        glGetActiveUniform(programId, (GLuint)i, bufSize, &length, &size, &type, name);
+        glGetActiveUniform(programId, static_cast<GLuint>(i), bufSize, &length, &size, &type, name);
         std::string stringName = name;
         if(stringName.find_first_of('.') != std::string::npos) {
             std::string structName = stringName.substr(0, stringName.find_first_of('.'));
@@ -127,6 +123,16 @@ void GLProgram::SetUniformVariable(std::string name, Tensor value) const
     }
     GLint uniformLoc = glGetUniformLocation(programId, name.c_str());
     setUniform(uniformLoc, value);
+}
+
+void GLProgram::SetUniformVariable(std::string name, int value) const
+{
+    auto variable = uniforms.find(name);
+    if(variable == uniforms.end()) {
+        throw EngineException("Trying to assign non-existing uniform - " + name);
+    }
+    GLint uniformLoc = glGetUniformLocation(programId, name.c_str());
+    glUniform1i(uniformLoc, value);
 }
 
 void GLProgram::BindShader(const GLShader& shader)

@@ -27,6 +27,7 @@
 #include <MazeSceneBuilder.h>
 #include <PhysicsPrimitives.h>
 #include <MazePhysics.h>
+#include <Uniform.h>
 #include <Time.h>
 
 namespace TG = TierGine;
@@ -115,6 +116,7 @@ void MazeApp::initializeBuffers()
     materialFiles.push_back({"./res/textures/wall3.jpg", "./res/textures/wall_norm.jpg"});
     materialFiles.push_back({"./res/textures/wall4.jpg", "./res/textures/wall_norm.jpg"});
     materialFiles.push_back({"./res/textures/wall5.jpg", "./res/textures/wall_norm.jpg"});
+    materialFiles.push_back({"./res/textures/brick.jpg", "./res/textures/brick_norm.jpg"});
     MazeSceneBuilder builder(materials, materialFiles, GetBackend());
     scene.reset(builder.CreateSceneAndGrid(*GetContext(), freeCamera.GetCamera(), *pipeline));
     physics.reset(builder.CreatePhysicsEngine());

@@ -54,6 +54,7 @@ private:
     std::vector<TG::IMaterial*> wallMaterials;
     std::unordered_map<std::string, TG::ITexture*> textures;
     TG::IMaterial* floorMaterial;
+    TG::IMaterial* ceilingMaterial;
 
     void loadMaterials(TierGine::ITextureSampler* sampler, TierGine::IContext& context);
     void loadMaterial(TierGine::ITextureSampler* sampler, TierGine::IContext& context,

@@ -38,6 +38,7 @@ public:
     virtual void Activate() const override { pipeline->Activate(); }
     virtual UniformVariable GetUniformVariable(std::string name) const override { return pipeline->GetUniformVariable( name ); }
     virtual void SetUniformVariable(std::string name, Tensor value) const override { pipeline->SetUniformVariable(name, value); }
+    virtual void SetUniformVariable(std::string name, int value) const override { pipeline->SetUniformVariable(name, value); }
     const std::unordered_map<std::string, UniformVariable>& GetUniformVariables() const override
     { return pipeline->GetUniformVariables(); }
 

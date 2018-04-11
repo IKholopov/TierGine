@@ -28,9 +28,9 @@ SimpleScene::SimpleScene(const ICamera& camera, IPipeline& defaultPipeline) :
     assertPipelineUniforms( defaultPipeline.GetUniformVariables() );
 
     defaultMaterial.Ka = glm::vec3(0.8f, 0.8f, 0.8f);
-    defaultMaterial.Kd = glm::vec3(20.0f, 20.0f, 20.0f);
-    defaultMaterial.Ks = glm::vec3(1.0f, 1.0f, 1.0f);
-    defaultMaterial.shininess = 120.0f;
+    defaultMaterial.Kd = glm::vec3(0.4f, 0.4f, 0.4f);
+    defaultMaterial.Ks = glm::vec3(0.4f, 0.4f, 0.4f);
+    defaultMaterial.shininess = 50.0f;
 }
 
 void SimpleScene::Add(std::unique_ptr<ISceneObject>& object)
@@ -64,7 +64,6 @@ void SimpleScene::Render()
         for(int i = 0; i < 2; ++i){
             lightsVariable[i].Set(lights[i]);
         }
-        materialVariable.Set(defaultMaterial);
         modelPosition.Set(pos);
         (*obj)->Draw();
     }

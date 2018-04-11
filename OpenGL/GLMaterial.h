@@ -32,7 +32,8 @@ public:
     virtual void BindAt(int textureLevelId) override { sampler->BindAt(textureLevelId); }
 
     // IMaterial interface
-    virtual void Activate(IPipeline* pipeline) override;
+    virtual void Activate(IPipeline* pipeline, UniformVariable& textureValue,
+                          UniformVariable& normalMapVariable) override;
     virtual MaterialInfo& GetMaterialInfo() override { return info; }
     virtual const MaterialInfo& GetMaterialInfo() const override { return info; }
     virtual void SetTexture(ITexture* texture) override;

@@ -36,7 +36,8 @@ struct MaterialInfo
 };
 
 interface IMaterial : public ITextureSampler {
-    virtual void Activate(IPipeline* pipeline) = 0;
+    virtual void Activate(IPipeline* pipeline, UniformVariable& textureValue,
+                                 UniformVariable& normalMapVariable) = 0;
     virtual MaterialInfo& GetMaterialInfo() = 0;
     virtual const MaterialInfo& GetMaterialInfo() const = 0;
     virtual void SetTexture(ITexture* texture) = 0;

@@ -39,39 +39,36 @@ struct MaterialInfo
 uniform MaterialInfo material;
 
 in mat3 TBN;
-in vec4 lightPosCamSpace[2]; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
-in vec4 posCamSpace; //координаты вершины в системе координат камеры (интерполированы между вершинами треугольника)
+in vec4 lightPosCamSpace[2];
+in vec4 posCamSpace;
 in vec2 texCoord;
 
-out vec4 fragColor; //выходной цвет фрагмента
+out vec4 fragColor;
 
 void main()
 {
     vec3 color = vec3(0.0f);
     vec3 diffuseColor = texture(diffuseTex, texCoord).rgb;
-    vec3 dist;
-    for(int i = 0; i < 2; ++i)
-    {
-        dist = lightPosCamSpace[i].xyz - posCamSpace.xyz;
-        vec3 lightDirCamSpace = normalize(dist); //направление на источник света
+    for(int i = 0; i < 2; ++i) {
+        vec3 dist = lightPosCamSpace[i].xyz - posCamSpace.xyz;
+        vec3 lightDirCamSpace = normalize(dist);
         float distL2 = max(length(dist), 1.4);
-        vec3 normal = normalize(texture(normalTex, texCoord).rgb * 2.0 - 1.0); //нормализуем нормаль после интерполяции
+        vec3 normal = normalize(texture(normalTex, texCoord).rgb * 2.0 - 1.0);
 
         float NdotL = max(dot(normal, TBN * lightDirCamSpace.xyz), 0.0);
 
 
         color += diffuseColor * ( (light[i].La * material.Ka) / pow(distL2,2) + (light[i].Ld * material.Kd * NdotL) / pow(distL2,2) ); //цвет вершины
-        if (NdotL > 0.0)
-        {
+        if (NdotL > 0.0) {
             vec3 viewDirection = normalize(- posCamSpace.xyz);
             vec3 halfVector = TBN * normalize(lightDirCamSpace.xyz + viewDirection);
 
-            float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну
-            blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
+            float blinnTerm = max(dot(normal, halfVector), 0.0);
+            blinnTerm = pow(blinnTerm, material.shininess);
 
             color += light[i].Ls * material.Ks * blinnTerm / pow(distL2,2);
         }
     }
 
-    fragColor = vec4(color, 1.0); //просто копируем
+    fragColor = vec4(color, 1.0);
 }

@@ -31,6 +31,7 @@ public:
     enum TUniformType {
         UT_FLOAT,
         UT_INT,
+        UT_BOOL,
         UT_VEC_2,
         UT_VEC_3,
         UT_VEC_4,
@@ -57,7 +58,7 @@ public:
     bool IsValid() const { return type != UT_INVALID; }
 
     template <class T>
-    void Set(T& value);
+    void Set(const T& value);
 
 private:
     IPipeline* pipeline;

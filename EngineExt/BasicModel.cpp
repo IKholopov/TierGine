@@ -86,7 +86,8 @@ void BasicModel::Draw()
 {
     mesh.Bind();
     if(material != nullptr) {
-        material->Activate(pipeline);
+        materialVariable.Set(material->GetMaterialInfo());
+        material->Activate(pipeline, textureValue, normalMapValue);
     }
     mesh.GetRenderer().RenderWithMode(mode, style);
 }
@@ -113,6 +114,13 @@ void BasicModel::AddTangentTensors(Tensor tangents, Tensor bitangent)
 {
     mesh.AddAtribute(TangentAttributeId, tangents);
     mesh.AddAtribute(BitangentAttributeId, bitangent);
+}
+
+void BasicModel::SetPipeline(IPipeline* pipeline, UniformVariable textureVar, UniformVariable normalMapVar, UniformVariable materialVar) {
+    textureValue = textureVar;
+    normalMapValue = normalMapVar;
+    materialVariable = materialVar;
+    this->pipeline = pipeline;
 }
 
 void BasicModel::updateMat()

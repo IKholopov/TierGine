@@ -23,56 +23,70 @@
 namespace TierGine {
 
 template<>
-void UniformVariable::Set<Tensor>(Tensor& value)
+void UniformVariable::Set<Tensor>(const Tensor& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, value);
 }
 
 template<>
-void UniformVariable::Set<float>(float& value)
+void UniformVariable::Set<float>(const float& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
-void UniformVariable::Set<glm::vec2>(glm::vec2& value)
+void UniformVariable::Set<bool>(const bool& value)
+{
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, static_cast<int>(value));
+}
+
+template<>
+void UniformVariable::Set<int>(const int& value)
+{
+    assert(IsValid());
+    pipeline->SetUniformVariable(name, value);
+}
+
+template<>
+void UniformVariable::Set<glm::vec2>(const glm::vec2& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
-void UniformVariable::Set<glm::vec3>(glm::vec3& value)
+void UniformVariable::Set<glm::vec3>(const glm::vec3& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
-void UniformVariable::Set<glm::vec4>(glm::vec4& value)
+void UniformVariable::Set<glm::vec4>(const glm::vec4& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
-void UniformVariable::Set<glm::mat2>(glm::mat2& value)
+void UniformVariable::Set<glm::mat2>(const glm::mat2& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
-void UniformVariable::Set<glm::mat3>(glm::mat3& value)
+void UniformVariable::Set<glm::mat3>(const glm::mat3& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, CreateTensor(value));
 }
 
 template<>
-void UniformVariable::Set<const glm::mat4>(const glm::mat4& value)
+void UniformVariable::Set<glm::mat4>(const glm::mat4& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name, CreateTensor(value));

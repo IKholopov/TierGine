@@ -52,7 +52,8 @@ public:
     virtual void LoadFromTensors(Tensor vertices, Tensor normals, Tensor uvTexture) override;
     virtual void AddTangentTensors(Tensor tangents, Tensor bitangent) override;
     virtual IPipeline* GetPipeline() const override { return pipeline; }
-    virtual void SetPipeline(IPipeline* pipeline) override { this->pipeline = pipeline; }
+    virtual void SetPipeline(IPipeline* pipeline, UniformVariable textureVar, UniformVariable normalMapVar,
+                             UniformVariable materialVar) override;
 
     void SetMaterial(IMaterial* material) { this->material = material; }
 
@@ -65,6 +66,9 @@ private:
     TPolygonRenderStyle style;
     IMesh& mesh;
     IPipeline* pipeline;
+    UniformVariable textureValue;
+    UniformVariable normalMapValue;
+    UniformVariable materialVariable;
     IMaterial* material;
 
     void updateMat();
