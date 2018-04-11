@@ -50,6 +50,7 @@ public:
     // IModel interface
     virtual void LoadFromTensors(Tensor vertices, Tensor normals) override;
     virtual void LoadFromTensors(Tensor vertices, Tensor normals, Tensor uvTexture) override;
+    virtual void AddTangentTensors(Tensor tangents, Tensor bitangent) override;
     virtual IPipeline* GetPipeline() const override { return pipeline; }
     virtual void SetPipeline(IPipeline* pipeline) override { this->pipeline = pipeline; }
 

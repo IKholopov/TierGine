@@ -21,6 +21,13 @@
 
 namespace TierGine {
 
+static const int VerticesAttributeId = 0;
+static const int NormalsAttributeId = 1;
+static const int UVsAttributeId = 2;
+static const int TangentAttributeId = 3;
+static const int BitangentAttributeId = 4;
+
+
 BasicModel::BasicModel(IMesh& mesh, glm::vec3 position, glm::vec3 rotation,
                        glm::vec3 scale,
                        TRenderingMode mode,
@@ -91,15 +98,21 @@ void BasicModel::LoadFromPath(std::string path)
 
 void BasicModel::LoadFromTensors(Tensor vertices, Tensor normals)
 {
-    mesh.AddAtribute(0, vertices);
-    mesh.AddAtribute(1, normals);
+    mesh.AddAtribute(VerticesAttributeId, vertices);
+    mesh.AddAtribute(NormalsAttributeId, normals);
 }
 
 void BasicModel::LoadFromTensors(Tensor vertices, Tensor normals, Tensor uvTexture)
 {
-    mesh.AddAtribute(0, vertices);
-    mesh.AddAtribute(1, normals);
-    mesh.AddAtribute(2, uvTexture);
+    mesh.AddAtribute(VerticesAttributeId, vertices);
+    mesh.AddAtribute(NormalsAttributeId, normals);
+    mesh.AddAtribute(UVsAttributeId, uvTexture);
+}
+
+void BasicModel::AddTangentTensors(Tensor tangents, Tensor bitangent)
+{
+    mesh.AddAtribute(TangentAttributeId, tangents);
+    mesh.AddAtribute(BitangentAttributeId, bitangent);
 }
 
 void BasicModel::updateMat()

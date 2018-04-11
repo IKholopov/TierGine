@@ -123,4 +123,12 @@ Tensor CreateTensor<glm::mat4>(const glm::mat4& otherImplementation)
     return Tensor(4, 4, std::shared_ptr<Tensor::DataHolder>(data));
 }
 
+template<>
+glm::vec3 Tensor::ToGLM<glm::vec3>(int position) {
+    assert(this->GetChannels() == 3);
+    assert(position < GetSize());
+    const float* ptr = GetPointer() + 3*position;
+    return glm::vec3(ptr[0], ptr[1], ptr[2]);
+}
+
 }

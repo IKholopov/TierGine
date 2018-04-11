@@ -44,10 +44,14 @@ public:
     Tensor& operator=(const Tensor&& other);
 
     const void* GetRawPointer() const { return data == nullptr ? nullptr : data->GetRawAddress(); }
+    template<typename T = float>
+    const T* GetPointer() const { return data == nullptr ? nullptr : static_cast<const T*>(data->GetRawAddress()); }
     int GetSize() const { return size; }
     char GetChannels() const { return channels; }
     Type GetType() const { return data == nullptr ? T_ANY : data->GetType(); }
     Tensor Add(Tensor other) const;
+    template<typename T>
+    T ToGLM(int position);
 
 private:
     std::shared_ptr<DataHolder> data;

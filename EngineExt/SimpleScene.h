@@ -52,7 +52,7 @@ private:
 
     UniformVariable cameraProjection;
     UniformVariable cameraView;
-    UniformVariable normalToCameraMatrix;
+    //UniformVariable normalToCameraMatrix;
     UniformVariable modelPosition;
     UniformArray lightsVariable;
     UniformVariable materialVariable;

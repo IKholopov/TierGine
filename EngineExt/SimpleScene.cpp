@@ -27,10 +27,10 @@ SimpleScene::SimpleScene(const ICamera& camera, IPipeline& defaultPipeline) :
 {
     assertPipelineUniforms( defaultPipeline.GetUniformVariables() );
 
-    defaultMaterial.Ka = glm::vec3(1.0f, 1.0f, 0.0f);
-    defaultMaterial.Kd = glm::vec3(1.0f, 1.0f, 0.0f);
+    defaultMaterial.Ka = glm::vec3(0.8f, 0.8f, 0.8f);
+    defaultMaterial.Kd = glm::vec3(20.0f, 20.0f, 20.0f);
     defaultMaterial.Ks = glm::vec3(1.0f, 1.0f, 1.0f);
-    defaultMaterial.shininess = 128.0f;
+    defaultMaterial.shininess = 120.0f;
 }
 
 void SimpleScene::Add(std::unique_ptr<ISceneObject>& object)
@@ -61,8 +61,6 @@ void SimpleScene::Render()
             cameraProjection.Set(projections.Projection);
             pipelineInitialized = true;
         }
-        auto transposed = glm::transpose(glm::inverse(glm::mat3(projections.View * pos)));
-        normalToCameraMatrix.Set(transposed);
         for(int i = 0; i < 2; ++i){
             lightsVariable[i].Set(lights[i]);
         }
@@ -96,7 +94,7 @@ void SimpleScene::activatePipeline(IPipeline* pipeline)
         lightsVariable.push_back(pipeline->GetUniformVariable(std::string(LightInfoName) + "[" + std::to_string(i) + "]"));
     }
     materialVariable = pipeline->GetUniformVariable(MaterialInfoName);
-    normalToCameraMatrix = pipeline->GetUniformVariable(NormalToCameraMatrixName);
+    //normalToCameraMatrix = pipeline->GetUniformVariable(NormalToCameraMatrixName);
 }
 
 

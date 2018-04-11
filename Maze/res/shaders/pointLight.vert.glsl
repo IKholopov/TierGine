@@ -21,8 +21,6 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
-uniform mat3 normalToCameraMatrix;
-
 struct LightInfo
 {
     vec3 pos;
@@ -35,8 +33,10 @@ uniform LightInfo light[2];
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexNormal;
 layout(location = 2) in vec2 vertexTexCoord;
+layout(location = 3) in vec3 vertexTangent;
+layout(location = 4) in vec3 vertexBitangent;
 
-out vec3 normalCamSpace;
+out mat3 TBN;
 out vec4 lightPosCamSpace[2];
 out vec4 posCamSpace;
 out vec2 texCoord;
@@ -44,9 +44,14 @@ out vec2 texCoord;
 void main()
 {
     texCoord = vertexTexCoord;
-
+    mat4 modelViewFull = viewMatrix * modelMatrix;
+    mat3 modelViewRot = mat3(vec3(modelViewFull[0]), vec3(modelViewFull[1]), vec3(modelViewFull[2]));
+    TBN = transpose(mat3(
+                            modelViewRot * normalize(vertexTangent),
+                            modelViewRot * normalize(vertexBitangent),
+                            modelViewRot * normalize(vertexNormal)
+                          ));
     posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
-    normalCamSpace = normalize(normalToCameraMatrix * vertexNormal);
     for(int i = 0; i < 2; ++i) {
         lightPosCamSpace[i] = viewMatrix * vec4(light[i].pos, 1.0);
     }

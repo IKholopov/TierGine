@@ -108,7 +108,14 @@ TG_Status MazeApp::RegularUpdate()
 
 void MazeApp::initializeBuffers()
 {
-    MazeSceneBuilder builder(materials, GetBackend());
+    std::vector<MazeSceneBuilder::MaterialFiles> materialFiles;
+    materialFiles.push_back({"./res/textures/wall.jpg", "./res/textures/wall_norm.jpg"});
+    materialFiles.push_back({"./res/textures/wall1.jpg", "./res/textures/wall_norm.jpg"});
+    materialFiles.push_back({"./res/textures/wall2.jpg", "./res/textures/wall_norm.jpg"});
+    materialFiles.push_back({"./res/textures/wall3.jpg", "./res/textures/wall_norm.jpg"});
+    materialFiles.push_back({"./res/textures/wall4.jpg", "./res/textures/wall_norm.jpg"});
+    materialFiles.push_back({"./res/textures/wall5.jpg", "./res/textures/wall_norm.jpg"});
+    MazeSceneBuilder builder(materials, materialFiles, GetBackend());
     scene.reset(builder.CreateSceneAndGrid(*GetContext(), freeCamera.GetCamera(), *pipeline));
     physics.reset(builder.CreatePhysicsEngine());
     std::unique_ptr<TG::IPhysicsObject> playerObjectFreeCam(new TG::PhysicsBox({1.0f, 0.5f, 1.0f}, {0.0f, 0.0f,  0.0f}, 0.3f));

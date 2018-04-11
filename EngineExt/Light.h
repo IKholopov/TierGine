@@ -23,9 +23,9 @@ namespace TierGine {
 
 struct LightInfo
 {
-    glm::vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
-    glm::vec3 La; //цвет и интенсивность окружающего света
-    glm::vec3 Ld; //цвет и интенсивность диффузного света
+    glm::vec3 pos;
+    glm::vec3 La;
+    glm::vec3 Ld;
     glm::vec3 Ls;
 };
 

@@ -28,6 +28,7 @@ interface IModel :
 {
     virtual void LoadFromTensors(Tensor vertices, Tensor normals) = 0;
     virtual void LoadFromTensors(Tensor vertices, Tensor normals, Tensor uvTexture) = 0;
+    virtual void AddTangentTensors(Tensor tangents, Tensor bitangent) = 0;
 };
 
 }

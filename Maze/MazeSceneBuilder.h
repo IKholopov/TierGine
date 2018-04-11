@@ -27,9 +27,15 @@ namespace TG = TierGine;
 
 class MazeSceneBuilder {
 public:
-    constexpr static const char* const BlockName = "block";
 
-    MazeSceneBuilder(std::vector<std::unique_ptr<TG::IMaterial>>& materials, TG::IBackend& backend);
+    struct MaterialFiles {
+      std::string TextureName;
+      std::string NormalMapName;
+    };
+
+    MazeSceneBuilder(std::vector<std::unique_ptr<TG::IMaterial>>& materials,
+                     const std::vector<MaterialFiles>& materialFiles,
+                     TG::IBackend& backend);
     TG::SimpleScene* CreateSceneAndGrid(TG::IContext& context,
                             const TG::ICamera& camera,
                             TierGine::IPipeline& defaultPipeline);
@@ -42,10 +48,14 @@ private:
 
     int width, height;
     std::vector<std::unique_ptr<TG::IMaterial>>& materials;
+    const std::vector<MaterialFiles>& materialFiles;
     TierGine::IBackend& backend;
 
-    TG::IMaterial* wallMaterial;
+    std::vector<TG::IMaterial*> wallMaterials;
+    std::unordered_map<std::string, TG::ITexture*> textures;
     TG::IMaterial* floorMaterial;
 
     void loadMaterials(TierGine::ITextureSampler* sampler, TierGine::IContext& context);
+    void loadMaterial(TierGine::ITextureSampler* sampler, TierGine::IContext& context,
+                      const MaterialFiles& material);
 };
