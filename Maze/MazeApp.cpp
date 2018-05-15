@@ -29,6 +29,7 @@
 #include <MazePhysics.h>
 #include <Uniform.h>
 #include <Time.h>
+#include <DebugCube.h>
 
 namespace TG = TierGine;
 
@@ -50,18 +51,35 @@ private:
 
 class MazeApp : public TG::GLBaseApp {
 public:
-    MazeApp() : GLBaseApp(TG::WindowGLFW::Config(1920, 1080, "Maze", false)), timeout(0.1f), lastHit(0.0f)
+    MazeApp() : GLBaseApp(TG::WindowGLFW::Config(1920, 1080, "Maze", false)), activeCamera(&freeCamera.GetCamera()), timeout(0.1f), lastHit(0.0f), camDistance(0.0f)
     {
         Initializers().push_back(std::make_unique<TierGine::GLDebugInitializer>());
         listeners.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_Q, [this](int action) {
             this->switchCamera();
         }, 0.5f)));
+        auto bluePortalOpen = [this](int action) {
+            std::lock_guard<std::mutex> gurad(critical);
+            portalGun->PerformShot(mazeCamera.GetCamera(), camDistance, MazePortalGun::C_BLUE);
+        };
+
+        listeners.push_back(std::move(GetInputProvider().AddMouseButtonListener(GLFW_MOUSE_BUTTON_LEFT, bluePortalOpen, 0.5f)));
+        listeners.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_F, bluePortalOpen, 0.5f)));
+
+        auto orangePortalOpen = [this](int action) {
+            std::lock_guard<std::mutex> gurad(critical);
+            portalGun->PerformShot(mazeCamera.GetCamera(), camDistance, MazePortalGun::C_ORANGE);
+        };
+
+        listeners.push_back(std::move(GetInputProvider().AddMouseButtonListener(GLFW_MOUSE_BUTTON_RIGHT, orangePortalOpen, 0.5f)));
+        listeners.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_E, orangePortalOpen, 0.5f)));
+
     }
 protected:
     virtual TG_Status MainLoop() override;
     virtual TG_Status RegularUpdate() override;
 
 private:
+    std::mutex critical;
     enum CamMode {
       FREE, MAZE
     } mode;
@@ -71,16 +89,21 @@ private:
     FPSCounter counter;
     std::unique_ptr<TG::IPipeline> pipeline;
     std::unique_ptr<TG::SimpleScene> scene;
-    std::unique_ptr<TG::PhysicsWorld> physics;
+    std::unique_ptr<MazePhysicsEngine> physics;
     std::unique_ptr<TG::ImpactSource> yImpact;
     std::vector<std::unique_ptr<TG::IMaterial> > materials;
+    std::unique_ptr<MazePortalGun> portalGun;
+    TG::ICamera* activeCamera;
+    DebugCube* camCube;
     TG::Listeners listeners;
     float timeout;
     float lastHit;
+    float camDistance;
 
     void initializeBuffers();
     void initializePipeline();
     void switchCamera();
+    void measureMazeCamDistance();
 };
 
 TG_Status MazeApp::MainLoop()
@@ -93,7 +116,12 @@ TG_Status MazeApp::MainLoop()
         initializeBuffers();
         initialized = true;
     }
+    portalGun->RenderPortals(scene.get(), &mazeCamera.GetCamera());
+    scene->SetCamera(activeCamera);
     scene->Render();
+
+    measureMazeCamDistance();
+
     counter.Count();
     return GLBaseApp::MainLoop();
 }
@@ -101,9 +129,19 @@ TG_Status MazeApp::MainLoop()
 TG_Status MazeApp::RegularUpdate()
 {
     if( initialized ) {
-        scene->Light()[1].pos = mazeCamera.GetCamera().GetPosition();
+        {
+            scene->Light()[1].pos = mazeCamera.GetCamera().GetPosition();
+            glm::vec2 direction = mazeCamera.GetCamera().GetDirection();
+            float& phi = direction[0];
+            float& theta = direction[1];
+            glm::vec3 camDir = glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
+            scene->Light()[1].dir = camDir;
+            camCube->SetOverriden(glm::inverse(mazeCamera.GetCamera().GetCameraProjections().View));
+        }
+
         physics->ApplyWorldUpdate();
     }
+
     return GLBaseApp::RegularUpdate();
 }
 
@@ -128,6 +166,14 @@ void MazeApp::initializeBuffers()
     yImpact->OnBind(mazeCamera.GetPhysics());
     physics->AddSecondOrderImpact(yImpact.get());
     physics->AddToWorld(mazeCamera.GetPhysics());
+    portalGun = std::move(builder.CreatePortalGun(*GetContext(), physics.get(), scene.get()));
+    measureMazeCamDistance();
+    std::unique_ptr<TG::ISceneObject> cube = std::make_unique<DebugCube>(*GetContext());
+    TG::SimplePipeline cubePipe(*GetContext(), "./res/shaders/rgb.vert.glsl", "./res/shaders/rgb.frag.glsl");
+    cube->SetPipeline(cubePipe.GetPipeline());
+    camCube = static_cast<DebugCube*>(cube.get());
+    scene->Add(cube);
+    portalGun->PerformShot(mazeCamera.GetCamera(), camDistance, MazePortalGun::C_ORANGE);
 }
 
 void MazeApp::initializePipeline()
@@ -144,16 +190,31 @@ void MazeApp::switchCamera()
     case FREE:
         mazeCamera.UnbindFromInput();
         freeCamera.BindToInputProvider(GetInputProvider());
+        activeCamera = &freeCamera.GetCamera();
         scene->SetCamera(&freeCamera.GetCamera());
         break;
     case MAZE:
         freeCamera.UnbindFromInput();
         mazeCamera.BindToInputProvider(GetInputProvider());
+        activeCamera = &mazeCamera.GetCamera();
         scene->SetCamera(&mazeCamera.GetCamera());
         break;
     default:
         assert(false);
         break;
+    }
+}
+
+void MazeApp::measureMazeCamDistance()
+{
+    const int x = GetWindow().GetConfig().Width / 2;
+    const int y = GetWindow().GetConfig().Height / 2;
+    {
+        std::lock_guard<std::mutex> gurad(critical);
+        if(&mazeCamera.GetCamera() == activeCamera) {
+            camDistance = mazeCamera.GetCamera().GetDistanceToPixel(x, y,
+                                        *GetContext());
+        }
     }
 }
 

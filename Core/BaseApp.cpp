@@ -67,14 +67,19 @@ TG_Status BaseApp::Main()
             }
         }
     });
-
-    while(!ShouldTerminate()) {
-        TG_Status status = MainLoop();
-        if( status != TG_Ok ) {
-            updateThread.detach();
-            return status;
+    try {
+        while(!ShouldTerminate()) {
+            TG_Status status = MainLoop();
+            if( status != TG_Ok ) {
+                updateThread.detach();
+                return status;
+            }
         }
+    } catch(...) {
+        updateThread.detach();
+        throw;
     }
+
     updateThread.join();
     return TG_Ok;
 }

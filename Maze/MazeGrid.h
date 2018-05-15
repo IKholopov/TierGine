@@ -17,6 +17,7 @@
 #pragma once
 
 #include <Physics/PhysicsEngine.h>
+#include <Tensor.h>
 #include <vector>
 
 namespace TG = TierGine;
@@ -28,14 +29,14 @@ const Byte LeftWall = BIT(4);
 const Byte Floor = BIT(5);
 const Byte Ceiling = BIT(6);
 
-static Byte NextWall(Byte b) {
+inline Byte NextWall(Byte b) {
     if( b < LeftWall ) {
         return b << 1;
     }
     return FrontWall;
 }
 
-static Byte NextWall(Byte b, Byte filter) {
+inline Byte NextWall(Byte b, Byte filter) {
     assert((filter & (FrontWall | BackWall | RightWall | LeftWall))!=0);
     Byte n;
     for(n = NextWall(b); (n & filter) == 0; n = NextWall(n))
@@ -43,13 +44,25 @@ static Byte NextWall(Byte b, Byte filter) {
     return n;
 }
 
+struct MeshData {
+    TG::Tensor v, norm, uv;
+    MeshData(const std::initializer_list<TG::Tensor>& init);
+    MeshData(MeshData&& other);
+
+    void Append(MeshData&& other);
+};
 
 class GridEntry {
 public:
     GridEntry(float x, float y, float z) : x(x), y(y), z(z) {}
+    GridEntry(const GridEntry& other): x(other.x), y(other.y), z(other.z) {}
+    GridEntry(GridEntry&& other): x(other.x), y(other.y), z(other.z) {}
 
     glm::vec3 GetPosition() const { return glm::vec3(x, y, z); }
     virtual void GetCollisionSources(std::vector<TG::ICollisionSource*>& sources) = 0;
+
+
+    virtual MeshData GetMesh() const = 0;
 
 private:
     float x;
@@ -60,13 +73,19 @@ private:
 class WalledEntry : public GridEntry {
 public:
     WalledEntry(float x, float y, float z, Byte directions) : GridEntry(x, y, z), directions(directions) {}
+    WalledEntry(const WalledEntry& other, Byte directions): GridEntry(other), directions(directions) {}
 
     const Byte& GetWalls() const { return directions; }
     void Add(Byte wall) { directions &= wall; }
     void Remove(Byte wall) { directions &= (~wall); }
     void GenerateCollisions();
+    glm::vec2 GetDirectionFrom(Byte wall, bool forward) const;
+    glm::vec3 GetPositionFrom(Byte wall, bool forward) const;
 
     virtual void GetCollisionSources(std::vector<TG::ICollisionSource*>& sources) override;
+    virtual TG::ICollisionSource* GetCollisionFor(Byte wall);
+
+    virtual MeshData GetMesh() const override;
 
 private:
     std::vector<std::unique_ptr<TG::ICollisionSource>> collisions;
@@ -83,6 +102,7 @@ public:
     {}
 
     virtual void GetCollisionSources(std::vector<TierGine::ICollisionSource*>& sources) override {}
+    virtual MeshData GetMesh() const override;
 
     const Byte& GetWalls() const { return directions; }
     void Add(Byte wall) { directions &= wall; }
@@ -94,6 +114,17 @@ private:
     const glm::vec3 lower;
     const glm::vec3 higher;
     Byte directions;
+};
+
+struct WallTarget {
+  WalledEntry* entry;
+  Byte wall;
+  bool forward;
+
+  WallTarget(): entry(nullptr), wall(0), forward(false) {}
+  WallTarget(WalledEntry* entry, Byte wall, bool forward):
+      entry(entry), wall(wall), forward(forward)
+  {}
 };
 
 class Grid {
@@ -111,6 +142,7 @@ public:
     }
 
     std::unique_ptr<TierGine::PhysicsWorld::ICollisionsIterator> GetCollisions(TG::IPhysicsObject* obj) const;
+    WallTarget GetTarget(const glm::vec3& point, const glm::vec3& direction) const;
 
     int XLength() const { return x; }
     int YLength() const { return y; }

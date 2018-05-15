@@ -27,6 +27,8 @@ public:
     virtual void AddStatic(TierGine::ICollisionSource* collisionSource) override { assert(false); }
     virtual void RemoveStatic(TierGine::ICollisionSource* collisionSource) override { assert(false); }
 
+    WallTarget GetTarget(const glm::vec3& point, const glm::vec3& direction) const { return grid->GetTarget(point, direction); }
+
 protected:
     virtual std::unique_ptr<ICollisionsIterator> GetCollisions(TierGine::IPhysicsObject* obj) override;
     virtual void AddCollisionToResolve(std::pair<TierGine::ICollisionSource*, TierGine::IPhysicsObject*> collision) override;

@@ -24,9 +24,11 @@ namespace TierGine {
 struct LightInfo
 {
     glm::vec3 pos;
+    glm::vec3 dir;
     glm::vec3 La;
     glm::vec3 Ld;
     glm::vec3 Ls;
+    float ang;
 };
 
 typedef std::vector<LightInfo> LightningScheme;

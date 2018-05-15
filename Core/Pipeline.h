@@ -34,6 +34,7 @@ interface IPipeline {
     virtual void Build() = 0;
     virtual void Activate() const = 0;
     virtual UniformVariable GetUniformVariable(std::string name) const = 0;
+    virtual bool HasUniformVariable(std::string name) const = 0;
     virtual void SetUniformVariable(std::string name, const Tensor value) const = 0;
     virtual void SetUniformVariable(std::string name, int value) const = 0;
     virtual const std::unordered_map<std::string, UniformVariable>& GetUniformVariables() const = 0;

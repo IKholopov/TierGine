@@ -55,16 +55,21 @@ class InputProvider : public IObservable{
 public:
     const std::unordered_map<int, std::set<Listener*> > GetKeySubscribers() const
     { return keySubscribers; }
+    const std::unordered_map<int, std::set<Listener*> > GetMouseButtonSubscribers() const
+    { return mouseButtonSubscribers; }
 
     std::unique_ptr<Listener> AddKeyListener(int key, std::function<void(int)> action, float timeout = 0.0f);
     std::unique_ptr<Listener> AddMouseListener(std::function<void(int, int)> action);
+    std::unique_ptr<Listener> AddMouseButtonListener(int key, std::function<void(int)> action, float timeout = 0.0f);
     void OnKey(int key, int action);
     void OnMouse(double x, double y);
+    void OnMouseButton(int key);
     virtual void Unsubscribe(Listener* listener) override;
 
 private:
     std::unordered_map<int, std::set<Listener*> > keySubscribers;
     std::set<Listener*> mouseSubscribers;
+    std::unordered_map<int, std::set<Listener*> > mouseButtonSubscribers;
 };
 
 typedef std::vector<std::unique_ptr<Listener>> Listeners;

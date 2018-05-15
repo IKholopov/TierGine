@@ -17,7 +17,8 @@
 
 #pragma once
 
-#include<WorldObject.h>
+#include <WorldObject.h>
+#include <Context.h>
 
 #include<glm/glm.hpp>
 
@@ -36,7 +37,7 @@ struct CameraData {
 
 interface ICamera : public IWorldObject {
     virtual const glm::vec2& GetDirection() const = 0;
-    virtual void SetDirection(glm::vec2& direction) = 0;
+    virtual void SetDirection(const glm::vec2& direction) = 0;
 
     virtual float GetFOV() const = 0;
     virtual void SetFOV(float fov) = 0;
@@ -49,6 +50,8 @@ interface ICamera : public IWorldObject {
 
     virtual float GetFarClipping() const = 0;
     virtual void SetFarClipping(float clipping) = 0;
+
+    virtual float GetDistanceToPixel(int x, int y, const IContext& context) const = 0;
 
     virtual const CameraData GetCameraProjections() const = 0;
 };

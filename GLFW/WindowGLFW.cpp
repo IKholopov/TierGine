@@ -91,6 +91,14 @@ void WindowGLFW::RegularUpdate()
             inputManager.OnKey(it->first, GLFW_PRESS);
         }
     }
+
+    auto& mouseButtonSubs = inputManager.GetMouseButtonSubscribers();
+    for(auto it = mouseButtonSubs.begin(); it != mouseButtonSubs.end(); ++it) {
+        if(glfwGetMouseButton(window, it->first) == GLFW_PRESS) {
+            inputManager.OnMouseButton(it->first);
+        }
+    }
+
     glfwPollEvents();
 }
 

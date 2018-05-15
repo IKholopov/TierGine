@@ -48,6 +48,18 @@ Tensor Tensor::Add(Tensor other) const
     return data->Add(other);
 }
 
+Tensor Tensor::Slice(int from, int to)
+{
+    int sliceSize = to - from;
+    from *= channels;
+    if(to != -1) {
+        to *= channels;
+    } else {
+        sliceSize = size - from;
+    }
+    return Tensor(sliceSize, channels, data->Slice(from, to));
+}
+
 template<>
 Tensor::Type TensorData<char>::GetType() const { return Tensor::T_BYTE; }
 

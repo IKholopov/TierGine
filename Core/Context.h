@@ -19,6 +19,7 @@
 #include <Pipeline.h>
 #include <Texture.h>
 #include <Mesh.h>
+#include <Framebuffer.h>
 
 namespace TierGine {
 
@@ -41,6 +42,11 @@ interface IContext {
 
     virtual ITextureSampler* CreateTextureSampler(const std::string& name) = 0;
     virtual void DeleteTextureSampler(const ITextureSampler* texture) = 0;
+
+    virtual IFramebuffer* CreateFramebuffer(int width, int height) = 0;
+    virtual void DeleteFramebuffer(const IFramebuffer* buffer) = 0;
+
+    virtual float GetScreenDepthAt(int x, int y) const = 0;
 };
 
 }

@@ -41,9 +41,9 @@ interface IRenderer {
 interface IDrawable {
     virtual ~IDrawable() {}
     virtual IPipeline* GetPipeline() const = 0;
-    virtual void SetPipeline(IPipeline* pipeline, UniformVariable textureVar,
-                             UniformVariable normalMapVar,
-                             UniformVariable materialVar) = 0;
+    virtual void SetPipeline(IPipeline* pipeline, UniformVariable textureVar=UniformVariable{},
+                             UniformVariable normalMapVar=UniformVariable{},
+                             UniformVariable materialVar=UniformVariable{}) = 0;
     virtual void SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style) = 0;
     virtual void Draw() = 0;
 };

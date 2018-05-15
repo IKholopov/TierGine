@@ -14,7 +14,7 @@
    limitations under the License.
    ==============================================================================
 */
-
+#pragma once
 #include <memory>
 
 #define interface struct
@@ -26,3 +26,26 @@ typedef int TG_Status;
 
 #define TG_Ok 0
 #define TG_Critical 1
+
+template<typename T>
+T min(const T& a, const T& b) { return a < b ? a : b; }
+
+template<typename T>
+T max(const T& a, const T& b) { return a < b ? b : a; }
+
+template<typename T>
+int sign(const T& a) {
+    if(a==0) {
+        return 0;
+    }
+    return a > 0 ? 1 : -1;
+}
+
+template<typename T>
+class Binder {
+public:
+    Binder(T& bindable): bindable(bindable) { bindable.Bind(); }
+    ~Binder() { bindable.Unbind(); }
+private:
+    T& bindable;
+};

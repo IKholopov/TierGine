@@ -37,6 +37,13 @@ const glm::mat4x4 FreeCamera::GetPositionTransformation() const {
     return glm::translate(glm::mat4(1.0), position);
 }
 
+float FreeCamera::GetDistanceToPixel(int x, int y, const IContext& context) const
+{
+    CameraData data =  GetCameraProjections();
+    float screenDepth = context.GetScreenDepthAt(x, y);
+    return data.Projection[3].z /(screenDepth * -2.0f + 1.0f - data.Projection[2].z) * -1.0f;
+}
+
 const CameraData FreeCamera::GetCameraProjections() const
 {
     std::lock_guard<std::mutex> guard(criticalSection);

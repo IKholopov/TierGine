@@ -19,6 +19,7 @@
 
 #include <Drawable.h>
 #include <WorldObject.h>
+#include <Camera.h>
 
 namespace TierGine {
 
@@ -35,6 +36,7 @@ interface IScene {
     virtual void Add(std::unique_ptr<ISceneObject>& object) = 0;
     virtual void Render() = 0;
     virtual void Update() = 0;
+    virtual void SetCamera(const ICamera* camera)  = 0;
 };
 
 }

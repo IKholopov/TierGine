@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <cstring>
+#include <glm/glm.hpp>
 
 namespace TierGine {
 
@@ -34,6 +35,7 @@ public:
         virtual int GetTypeSize() const = 0;
         virtual int GetLength() const = 0;
         virtual Type GetType() const = 0;
+        virtual std::shared_ptr<DataHolder> Slice(int from = 0, int to = -1) const = 0;
         virtual Tensor Add(Tensor tensor) const = 0;
     };
 
@@ -50,6 +52,7 @@ public:
     char GetChannels() const { return channels; }
     Type GetType() const { return data == nullptr ? T_ANY : data->GetType(); }
     Tensor Add(Tensor other) const;
+    Tensor Slice(int from = 0, int to = -1);
     template<typename T>
     T ToGLM(int position);
 
@@ -65,13 +68,18 @@ public:
     TensorData(int length, bool owner = true) :
         length(length),
         owner(owner)
-    { allocData(); }
+    {
+        if(owner) {
+            allocData();
+        }
+    }
 
     TensorData(const T* data, int length, bool owner = true) :
         length(length),
         data(data),
         owner(owner)
     { assert(data != nullptr); }
+
     ~TensorData() { if(owner) { delete data;  } }
 
     // DataHolder interface
@@ -80,6 +88,8 @@ public:
     virtual int GetLength() const override { return length; }
     virtual Tensor::Type GetType() const override;
     virtual Tensor Add(Tensor tensor) const override;
+    virtual std::shared_ptr<DataHolder> Slice(int from = 0, int to = -1) const override;
+
 
 private:
     const int length;
@@ -130,6 +140,23 @@ Tensor TensorData<T>::Add(Tensor tensor) const
     assert(tensor.GetRawPointer() != nullptr);
     std::memcpy(newData + length, tensor.GetRawPointer(), GetTypeSize() * additionalLength);
     return t;
+}
+
+template<typename T>
+std::shared_ptr<Tensor::DataHolder> TensorData<T>::Slice(int from, int to) const
+{
+    if(to == -1) {
+        to = length;
+    }
+    assert(from >= 0);
+    assert(from <= to);
+    assert(to <= length);
+    if(to - from == 0) {
+        return std::make_shared< TensorData<T> >(0, false);
+    }
+    auto sliceData = std::make_unique<T[]>(to - from);
+    std::memcpy(sliceData.get(), data + from, (to - from) * sizeof(T));
+    return std::make_shared< TensorData<T> >(sliceData.release(), to - from);
 }
 
 template<typename T>

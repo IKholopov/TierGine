@@ -15,6 +15,7 @@
    ==============================================================================
 */
 #include <SimpleScene.h>
+#include <EngineException.h>
 #include <GL/gl.h>
 
 namespace TierGine {
@@ -59,10 +60,10 @@ void SimpleScene::Render()
         if(!pipelineInitialized) {
             cameraView.Set(projections.View);
             cameraProjection.Set(projections.Projection);
+            for(int i = 0; i < lightsVariable.size(); ++i){
+                lightsVariable[i].Set(lights[i]);
+            }
             pipelineInitialized = true;
-        }
-        for(int i = 0; i < 2; ++i){
-            lightsVariable[i].Set(lights[i]);
         }
         modelPosition.Set(pos);
         (*obj)->Draw();
@@ -89,11 +90,19 @@ void SimpleScene::activatePipeline(IPipeline* pipeline)
     cameraView = pipeline->GetUniformVariable(CameraViewName);
     cameraProjection = pipeline->GetUniformVariable(CameraProjectionName);
     modelPosition = pipeline->GetUniformVariable(ModelPositionName);
+    lightsVariable.clear();
+
     for(int i = 0; i < 2; ++i) {
-        lightsVariable.push_back(pipeline->GetUniformVariable(std::string(LightInfoName) + "[" + std::to_string(i) + "]"));
+        std::string name = std::string(LightInfoName) + "[" + std::to_string(i) + "]";
+        if(pipeline->HasUniformVariable(name)) {
+            lightsVariable.push_back(pipeline->GetUniformVariable(name));
+        }
     }
-    materialVariable = pipeline->GetUniformVariable(MaterialInfoName);
-    //normalToCameraMatrix = pipeline->GetUniformVariable(NormalToCameraMatrixName);
+    if(pipeline->HasUniformVariable(MaterialInfoName))
+    {
+        materialVariable = pipeline->GetUniformVariable(MaterialInfoName);
+    }
+
 }
 
 

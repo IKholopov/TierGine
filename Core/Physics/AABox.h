@@ -34,6 +34,10 @@ public:
     const glm::vec3& Lower() const { return lower; }
     const glm::vec3& Higher() const { return higher; }
 
+    AABox Extend(float value) const {
+        return { lower - glm::vec3(value), higher + glm::vec3(value) };
+    }
+
 private:
     glm::vec3 lower;
     glm::vec3 higher;

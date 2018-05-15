@@ -29,6 +29,7 @@
 #include <GLProgram.h>
 #include <GLTexture.h>
 #include <GLMesh.h>
+#include <GLFramebuffer.h>
 
 namespace TierGine {
 
@@ -55,6 +56,11 @@ public:
     virtual ITextureSampler* CreateTextureSampler(const std::string& name) override;
     virtual void DeleteTextureSampler(const ITextureSampler* sampler) override;
 
+    virtual IFramebuffer* CreateFramebuffer(int width, int height) override;
+    virtual void DeleteFramebuffer(const IFramebuffer* buffer) override;
+
+    virtual float GetScreenDepthAt(int x, int y) const override;
+
     // IBackend interface
     virtual std::unique_ptr<IMaterial> CreateMaterial(ITextureSampler* sampler) override;
 
@@ -65,6 +71,7 @@ private:
     std::unordered_map<const IMesh*, std::unique_ptr<GLMesh>> meshes;
     std::unordered_map<const ITexture*, std::unique_ptr<GLTexture>> textures;
     std::unordered_map<const ITextureSampler*, std::unique_ptr<GLTextureSampler>> textureSamplers;
+    std::unordered_map<const IFramebuffer*, std::unique_ptr<GLFramebuffer>> framebuffers;
 };
 
 }

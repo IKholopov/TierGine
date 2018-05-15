@@ -36,6 +36,7 @@ public:
     virtual void BindShader(const IShader* shader) override { GetContext().BindShader(shader, pipeline); }
     virtual void Build() override { pipeline->Build(); }
     virtual void Activate() const override { pipeline->Activate(); }
+    virtual bool HasUniformVariable(std::string name) const override { return pipeline->HasUniformVariable( name ); }
     virtual UniformVariable GetUniformVariable(std::string name) const override { return pipeline->GetUniformVariable( name ); }
     virtual void SetUniformVariable(std::string name, Tensor value) const override { pipeline->SetUniformVariable(name, value); }
     virtual void SetUniformVariable(std::string name, int value) const override { pipeline->SetUniformVariable(name, value); }

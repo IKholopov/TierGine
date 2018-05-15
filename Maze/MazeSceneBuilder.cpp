@@ -20,407 +20,14 @@
 #include <Mesh.h>
 #include <Context.h>
 #include <SimpleScene.h>
+#include <SimplePipeline.h>
 #include <BasicModel.h>
 #include <MazePhysics.h>
 #include <TBN.h>
 #include <glm/glm.hpp>
 
-struct MeshData {
-    TG::Tensor v, norm, uv;
-};
-
-
-MeshData GetMeshFromHorizontalCell(const HorizontalCell* entry) {
-    Byte walls = entry->GetWalls();
-    if((walls & (Floor | Ceiling)) == 0) {
-        return { TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr)};
-    }
-    TG::Tensor vertices(0, 3, nullptr);
-    TG::Tensor normals(0, 3, nullptr);
-    TG::Tensor uvs(0, 2, nullptr);
-    if( walls & Floor) {
-        float xLower = entry->GetLower().x;
-        float xHigher = entry->GetHigher().x;
-        float y = entry->GetHigher().y;
-        float zLower = entry->GetLower().z;
-        float zHigher = entry->GetHigher().z;
-        vertices = vertices.Add(TG::CreateTensor(6, 3, {
-                                        xLower, y, zHigher,
-                                        xLower, y, zLower,
-                                        xHigher, y, zHigher,
-
-                                        xLower, y, zLower,
-                                        xHigher, y, zLower,
-                                        xHigher, y, zHigher
-                                    }));
-        normals = normals.Add(TG::CreateTensor(6, 3, {
-                                                 0.0f, 1.0f, 0.0f,
-                                                 0.0f, 1.0f, 0.0f,
-                                                 0.0f, 1.0f, 0.0f,
-                                                 0.0f, 1.0f, 0.0f,
-                                                 0.0f, 1.0f, 0.0f,
-                                                 0.0f, 1.0f, 0.0f,
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(6, 2, {
-                                                0.0f, zHigher,
-                                                 0.0f, 0.0f,
-                                                 xHigher, zHigher,
-                                                 0.0f, 0.0f,
-                                                 xHigher, 0.0f,
-                                                 xHigher, zHigher,
-                                               }));
-    }
-    if( walls & Ceiling) {
-        float xLower = entry->GetLower().x;
-        float xHigher = entry->GetHigher().x;
-        float y = entry->GetLower().y;
-        float zLower = entry->GetLower().z;
-        float zHigher = entry->GetHigher().z;
-        vertices = vertices.Add(TG::CreateTensor(6, 3, {
-                                        xLower, y, zLower,
-                                        xLower, y, zHigher,
-                                        xHigher, y, zHigher,
-
-                                        xLower, y, zLower,
-                                        xHigher, y, zHigher,
-                                        xHigher, y, zLower
-                                    }));
-        normals = normals.Add(TG::CreateTensor(6, 3, {
-                                                 0.0f, -1.0f, 0.0f,
-                                                 0.0f, -1.0f, 0.0f,
-                                                 0.0f, -1.0f, 0.0f,
-                                                 0.0f, -1.0f, 0.0f,
-                                                 0.0f, -1.0f, 0.0f,
-                                                 0.0f, -1.0f, 0.0f,
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(6, 2, {
-                                                 0.0f, 0.0f,
-                                                 0.0f, zHigher,
-                                                 xHigher, zHigher,
-                                                 0.0f, 0.0f,
-                                                 xHigher, zHigher,
-                                                 xHigher, 0.0f
-                                               }));
-    }
-    return { vertices, normals, uvs };
-}
-
-MeshData GetMeshFromWallCell(const WalledEntry* entry) {
-    Byte walls = entry->GetWalls();
-    if((walls & (FrontWall | BackWall | LeftWall | RightWall)) == 0) {
-        return {TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr)};
-    }
-    float x = entry->GetPosition().x;
-    float y = entry->GetPosition().y;
-    float z = entry->GetPosition().z;
-
-    TG::Tensor vertices(0, 3, nullptr);
-    TG::Tensor normals(0, 3, nullptr);
-    TG::Tensor uvs(0, 2, nullptr);
-
-    if(walls & FrontWall) {
-        vertices = TG::CreateTensor(12, 3, {
-                                        x + 0.4f, y + 0.0f, z + 0.6f,
-                                        x + 0.4f, y + 1.0f, z + 1.0f,
-                                        x + 0.4f, y + 0.0f, z + 1.0f,
-
-                                        x + 0.4f, y + 0.0f, z + 0.6f,
-                                        x + 0.4f, y + 1.0f, z + 0.6f,
-                                        x + 0.4f, y + 1.0f, z + 1.0f,
-
-                                        x + 0.6f, y + 0.0f, z + 0.6f,
-                                        x + 0.6f, y + 0.0f, z + 1.0f,
-                                        x + 0.6f, y + 1.0f, z + 1.0f,
-
-                                        x + 0.6f, y + 1.0f, z + 0.6f,
-                                        x + 0.6f, y + 0.0f, z + 0.6f,
-                                        x + 0.6f, y + 1.0f, z + 1.0f
-                                    });
-        normals = TG::CreateTensor(12, 3, {
-                                       -1.0f, 0.0f, 0.0f,
-                                       -1.0f, 0.0f, 0.0f,
-                                       -1.0f, 0.0f, 0.0f,
-                                       -1.0f, 0.0f, 0.0f,
-                                       -1.0f, 0.0f, 0.0f,
-                                       -1.0f, 0.0f, 0.0f,
-
-                                        1.0f, 0.0f, 0.0f,
-                                        1.0f, 0.0f, 0.0f,
-                                        1.0f, 0.0f, 0.0f,
-                                        1.0f, 0.0f, 0.0f,
-                                        1.0f, 0.0f, 0.0f,
-                                        1.0f, 0.0f, 0.0f
-                                   });
-        uvs = TG::CreateTensor(12, 2, {
-                                   0.0f , 0.1f ,
-                                   1.0f , 0.5f ,
-                                   0.0f , 0.5f ,
-                                   0.0f , 0.1f ,
-                                   1.0f , 0.1f ,
-                                   1.0f , 0.5f ,
-
-                                    0.0f , 0.1f ,
-                                    0.0f , 0.5f ,
-                                    1.0f , 0.5f ,
-                                    1.0f , 0.1f ,
-                                    0.0f , 0.1f ,
-                                    1.0f , 0.5f
-                               });
-
-    } else {
-        vertices = TG::CreateTensor(6, 3, {
-                                        x + 0.4f, y + 0.0f, z + 0.6f,
-                                        x + 0.4f, y + 1.0f, z + 0.6f,
-                                        x + 0.6f, y + 1.0f, z + 0.6f,
-
-                                        x + 0.4f, y + 0.0f, z + 0.6f,
-                                        x + 0.6f, y + 1.0f, z + 0.6f,
-                                        x + 0.6f, y + 0.0f, z + 0.6f
-                                    });
-        normals = TG::CreateTensor(6, 3, {
-                                        0.0f, 0.0f, 1.0f,
-                                        0.0f, 0.0f, 1.0f,
-                                        0.0f, 0.0f, 1.0f,
-                                        0.0f, 0.0f, 1.0f,
-                                        0.0f, 0.0f, 1.0f,
-                                        0.0f, 0.0f, 1.0f
-                                   });
-        uvs = TG::CreateTensor(6, 2, {
-                                    0.0f , -0.1f ,
-                                    1.0f , -0.1f ,
-                                    1.0f , 0.1f ,
-                                    0.0f , -0.1f ,
-                                    1.0f , 0.1f ,
-                                    0.0f , 0.1f
-                               });
-    }
-    if(walls & BackWall) {
-        vertices = vertices.Add(TG::CreateTensor(12, 3, {
-                                                   x + 0.4f, y + 0.0f, z + 0.0f,
-                                                   x + 0.4f, y + 1.0f, z + 0.4f,
-                                                   x + 0.4f, y + 0.0f, z + 0.4f,
-
-                                                   x + 0.4f, y + 0.0f, z + 0.0f,
-                                                   x + 0.4f, y + 1.0f, z + 0.0f,
-                                                   x + 0.4f, y + 1.0f, z + 0.4f,
-
-                                                   x + 0.6f, y + 0.0f, z + 0.0f,
-                                                   x + 0.6f, y + 0.0f, z + 0.4f,
-                                                   x + 0.6f, y + 1.0f, z + 0.4f,
-
-                                                   x + 0.6f, y + 1.0f, z + 0.0f,
-                                                   x + 0.6f, y + 0.0f, z + 0.0f,
-                                                   x + 0.6f, y + 1.0f, z + 0.4f
-                                                }));
-        normals = normals.Add(TG::CreateTensor(12, 3, {
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-
-                                                    1.0f, 0.0f, 0.0f,
-                                                    1.0f, 0.0f, 0.0f,
-                                                    1.0f, 0.0f, 0.0f,
-                                                    1.0f, 0.0f, 0.0f,
-                                                    1.0f, 0.0f, 0.0f,
-                                                    1.0f, 0.0f, 0.0f
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(12, 2, {
-                                           0.0f , 0.5f ,
-                                           1.0f , 0.9f ,
-                                           0.0f , 0.9f ,
-                                           0.0f , 0.5f ,
-                                           1.0f , 0.5f ,
-                                           1.0f , 0.9f ,
-
-                                           0.0f , 0.5f ,
-                                           0.0f , 0.9f ,
-                                           1.0f , 0.9f ,
-                                           1.0f , 0.5f ,
-                                           0.0f , 0.5f ,
-                                           1.0f , 0.9f
-                               }));
-    } else {
-        vertices = vertices.Add(TG::CreateTensor(6, 3, {
-                                                   x + 0.6f, y + 0.0f, z + 0.4f,
-                                                   x + 0.6f, y + 1.0f, z + 0.4f,
-                                                   x + 0.4f, y + 0.0f, z + 0.4f,
-
-                                                   x + 0.4f, y + 0.0f, z + 0.4f,
-                                                   x + 0.6f, y + 1.0f, z + 0.4f,
-                                                   x + 0.4f, y + 1.0f, z + 0.4f,
-                                                }));
-        normals = normals.Add(TG::CreateTensor(6, 3, {
-                                                   0.0f, 0.0f, -1.0f,
-                                                   0.0f, 0.0f, -1.0f,
-                                                   0.0f, 0.0f, -1.0f,
-                                                   0.0f, 0.0f, -1.0f,
-                                                   0.0f, 0.0f, -1.0f,
-                                                   0.0f, 0.0f, -1.0f
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(6, 2, {
-                                           0.0f , 0.1f ,
-                                           1.0f , 0.1f ,
-                                           0.0f , -0.1f ,
-                                           0.0f , -0.1f ,
-                                           1.0f , 0.1f ,
-                                           1.0f , -0.1f
-                               }));
-    }
-    if(walls & RightWall) {
-        vertices = vertices.Add(TG::CreateTensor(12, 3, {
-                                                   x + 1.0f, y + 0.0f, z + 0.4f,
-                                                   x + 1.0f, y + 1.0f, z + 0.4f,
-                                                   x + 0.6f, y + 0.0f, z + 0.4f,
-
-                                                   x + 0.6f, y + 0.0f, z + 0.4f,
-                                                   x + 1.0f, y + 1.0f, z + 0.4f,
-                                                   x + 0.6f, y + 1.0f, z + 0.4f,
-
-                                                   x + 1.0f, y + 0.0f, z + 0.6f,
-                                                   x + 0.6f, y + 0.0f, z + 0.6f,
-                                                   x + 1.0f, y + 1.0f, z + 0.6f,
-
-                                                   x + 1.0f, y + 1.0f, z + 0.6f,
-                                                   x + 0.6f, y + 0.0f, z + 0.6f,
-                                                   x + 0.6f, y + 1.0f, z + 0.6f
-                                                }));
-        normals = normals.Add(TG::CreateTensor(12, 3, {
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(12, 2, {
-                                           0.0f , 0.5f ,
-                                           1.0f , 0.5f ,
-                                           0.0f , 0.1f ,
-                                           0.0f , 0.1f ,
-                                           1.0f , 0.5f ,
-                                           1.0f , 0.1f ,
-
-                                            0.0f , 0.5f ,
-                                            0.0f , 0.1f ,
-                                            1.0f , 0.5f ,
-                                            1.0f , 0.5f ,
-                                            0.0f , 0.1f ,
-                                            1.0f , 0.1f
-                               }));
-    } else {
-        vertices = vertices.Add(TG::CreateTensor(6, 3, {
-                                                   x + 0.6f, y + 0.0f, z + 0.4f,
-                                                   x + 0.6f, y + 0.0f, z + 0.6f,
-                                                   x + 0.6f, y + 1.0f, z + 0.6f,
-
-                                                   x + 0.6f, y + 1.0f, z + 0.6f,
-                                                   x + 0.6f, y + 1.0f, z + 0.4f,
-                                                   x + 0.6f, y + 0.0f, z + 0.4f
-                                                }));
-        normals = normals.Add(TG::CreateTensor(6, 3, {
-                                                   1.0f, 0.0f, 0.0f,
-                                                   1.0f, 0.0f, 0.0f,
-                                                   1.0f, 0.0f, 0.0f,
-                                                   1.0f, 0.0f, 0.0f,
-                                                   1.0f, 0.0f, 0.0f,
-                                                   1.0f, 0.0f, 0.0f
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(6, 2, {
-                                           0.0f , -0.1f ,
-                                           0.0f , 0.1f ,
-                                           1.0f , 0.1f ,
-                                           1.0f , 0.1f ,
-                                           1.0f , -0.1f ,
-                                           0.0f , -0.1f
-                               }));
-    }
-    if(walls & LeftWall) {
-        vertices = vertices.Add(TG::CreateTensor(12, 3, {
-                                                   x + 0.4f, y + 0.0f, z + 0.4f,
-                                                   x + 0.4f, y + 1.0f, z + 0.4f,
-                                                   x + 0.0f, y + 0.0f, z + 0.4f,
-
-                                                   x + 0.0f, y + 0.0f, z + 0.4f,
-                                                   x + 0.4f, y + 1.0f, z + 0.4f,
-                                                   x + 0.0f, y + 1.0f, z + 0.4f,
-
-                                                   x + 0.4f, y + 0.0f, z + 0.6f,
-                                                   x + 0.0f, y + 0.0f, z + 0.6f,
-                                                   x + 0.4f, y + 1.0f, z + 0.6f,
-
-                                                   x + 0.4f, y + 1.0f, z + 0.6f,
-                                                   x + 0.0f, y + 0.0f, z + 0.6f,
-                                                   x + 0.0f, y + 1.0f, z + 0.6f
-                                                }));
-        normals = normals.Add(TG::CreateTensor(12, 3, {
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-                                                    0.0f, 0.0f, -1.0f,
-
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f,
-                                                    0.0f, 0.0f, 1.0f
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(12, 2, {
-                                           0.0f , 0.9f ,
-                                           1.0f , 0.9f ,
-                                           0.0f , 0.5f ,
-                                           0.0f , 0.5f ,
-                                           1.0f , 0.9f ,
-                                           1.0f , 0.5f ,
-
-                                           0.0f , 0.9f ,
-                                           0.0f , 0.5f ,
-                                           1.0f , 0.9f ,
-                                           1.0f , 0.9f ,
-                                           0.0f , 0.5f ,
-                                           1.0f , 0.5f
-                               }));
-    } else {
-        vertices = vertices.Add(TG::CreateTensor(6, 3, {
-                                                   x + 0.4f, y + 0.0f, z + 0.6f,
-                                                   x + 0.4f, y + 0.0f, z + 0.4f,
-                                                   x + 0.4f, y + 1.0f, z + 0.6f,
-
-                                                   x + 0.4f, y + 1.0f, z + 0.6f,
-                                                   x + 0.4f, y + 0.0f, z + 0.4f,
-                                                   x + 0.4f, y + 1.0f, z + 0.4f
-                                                }));
-        normals = normals.Add(TG::CreateTensor(6, 3, {
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f,
-                                                   -1.0f, 0.0f, 0.0f
-                                               }));
-        uvs = uvs.Add(TG::CreateTensor(6, 2, {
-                                           0.0f , 0.1f ,
-                                           0.0f , -0.1f ,
-                                           1.0f , 0.1f ,
-                                           1.0f , 0.1f ,
-                                           0.0f , -0.1f ,
-                                           1.0f , -0.1f
-                               }));
-    }
-    return {vertices, normals, uvs};
-}
+static int BufferWidth = 1024;
+static int BufferHeight = 2560;
 
 namespace {
 
@@ -534,21 +141,6 @@ void ProcessGrid(Grid& grid) {
     BreakWalls(grid, 0, 0, accessable);
 }
 
-glm::vec3 ProcessVec(std::ifstream& file) {
-    glm::vec3 vec;
-    file >> vec[0] >> vec[1] >> vec[2];
-    return vec;
-}
-
-void CopyVec3(glm::vec3& from, float* to, int& offset) {
-     *(to+offset) = from[0];
-     offset += 1;
-     *(to+offset) = from[2];
-     offset += 1;
-     *(to+offset) = from[1];
-     offset += 1;
-}
-
 }
 
 MazeSceneBuilder::MazeSceneBuilder(std::vector<std::unique_ptr<TG::IMaterial>>& materials,
@@ -588,7 +180,7 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
         ProcessGrid(*grid.get());
         for(int i = 0; i < n; ++i) {
             for(int j = 0; j < n; ++j) {
-                auto [v, norm, uv] = GetMeshFromWallCell(static_cast<const WalledEntry*>((*grid)[i][0][j].get()));
+                auto [v, norm, uv] = (*grid)[i][0][j]->GetMesh();
                 int meshIndex = rand() % meshes.size();
                 meshes[meshIndex].v = meshes[meshIndex].v.Add(v);
                 meshes[meshIndex].norm = meshes[meshIndex].norm.Add(norm);
@@ -616,7 +208,7 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
         TG::Tensor normals(0, 3, nullptr);
         TG::Tensor uvs(0, 2, nullptr);
 
-        auto [v, norm, uv] = GetMeshFromHorizontalCell(grid->Horizontal(0).get());
+        auto [v, norm, uv] = grid->Horizontal(0)->GetMesh();
         vertices = vertices.Add(v);
         normals = normals.Add(norm);
         uvs = uvs.Add(uv);
@@ -639,7 +231,7 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
         TG::Tensor uvs(0, 2, nullptr);
 
         for(int i = 0; i <= grid->YLength(); ++i) {
-            auto [v, norm, uv] = GetMeshFromHorizontalCell(grid->Horizontal(i).get());
+            auto [v, norm, uv] = grid->Horizontal(i)->GetMesh();
             vertices = vertices.Add(v);
             normals = normals.Add(norm);
             uvs = uvs.Add(uv);
@@ -657,22 +249,42 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
         scene->Add(model);
     }
     TG::LightInfo light;
-    light.pos = glm::vec3(20.0f, 0.7f, 20.0f);
-    light.La = glm::vec3(0.8f, 0.8f, 0.8f);
-    light.Ld = glm::vec3(0.5f, 0.5f, 0.5f);
-    light.Ls = glm::vec3(0.4f, 0.4f, 0.4f);
+    light.pos = glm::vec3(1.0f, 0.7f, 1.0f);
+    light.dir = glm::vec3(0.0f, 0.0f, 1.0f);
+    light.La = glm::vec3(0.8f, 0.8f, 0.8f)*2.0f;
+    light.Ld = glm::vec3(0.5f, 0.5f, 0.5f)*2.0f;
+    light.Ls = glm::vec3(0.4f, 0.4f, 0.4f)*2.0f;
+    light.ang = 2.0f;
 
     scene->Light().push_back(light);
+    light.pos = glm::vec3(5.0f, 0.7f, 5.0f);
+    light.dir = glm::vec3(0.0f, 0.0f, 1.0f);
+    light.La = glm::vec3(1.0f, 1.0f, 1.0f)*2.0f;
+    light.Ld = glm::vec3(0.9f, 0.9f, 0.9f)*2.0f;
+    light.Ls = glm::vec3(0.9f, 0.9f, 0.9f)*2.0f;
+    light.ang = 0.6f;
     scene->Light().push_back(light);
-
 
     return scene.release();
 }
 
-TierGine::PhysicsWorld* MazeSceneBuilder::CreatePhysicsEngine()
+MazePhysicsEngine* MazeSceneBuilder::CreatePhysicsEngine()
 {
     assert(grid.get() != nullptr);
     return new MazePhysicsEngine(std::move(grid));
+}
+
+std::unique_ptr<MazePortalGun> MazeSceneBuilder::CreatePortalGun(TierGine::IContext& context, MazePhysicsEngine* engine,TierGine::IScene* scene)
+{
+    auto portalGun = std::make_unique<MazePortalGun>(context, BufferWidth, BufferHeight, engine, scene);
+    TG::SimplePipeline portalPipeline(context, "./res/shaders/portal.vert.glsl",
+            "./res/shaders/portal.frag.glsl");
+    TG::ITextureSampler* portalSampler = context.CreateTextureSampler("portaledTexture");
+    auto blueMaterial = backend.CreateMaterial(portalSampler);
+    auto orangeMaterial = backend.CreateMaterial(portalSampler);
+    portalGun->SetPipeline(portalPipeline.GetPipeline());
+    portalGun->SetMaterials(std::move(blueMaterial), std::move(orangeMaterial));
+    return portalGun;
 }
 
 void MazeSceneBuilder::loadMaterials(TG::ITextureSampler* sampler, TG::IContext& context)
@@ -703,7 +315,8 @@ void MazeSceneBuilder::loadMaterials(TG::ITextureSampler* sampler, TG::IContext&
     ceilingMaterial->SetNormalMap(ceilNormal);
     ceilingMaterial->GetMaterialInfo().Ka = glm::vec3(0.2f);
     ceilingMaterial->GetMaterialInfo().Kd = glm::vec3(0.3f);
-    ceilingMaterial->GetMaterialInfo().Ks = glm::vec3(0.4f);
+    ceilingMaterial->GetMaterialInfo().Ks = glm::vec3(0.9f);
+    ceilingMaterial->GetMaterialInfo().shininess = 128.0f;
 
     for(auto file = materialFiles.begin(); file != materialFiles.end(); ++file) {
         loadMaterial(sampler, context, *file);
@@ -736,7 +349,7 @@ void MazeSceneBuilder::loadMaterial(TierGine::ITextureSampler* sampler, TierGine
     wallMaterial->SetNormalMap(wallNormal);
     wallMaterial->GetMaterialInfo().Ka = glm::vec3(0.8f, 0.8f, 0.8f);
     wallMaterial->GetMaterialInfo().Kd = glm::vec3(0.4f, 0.4f, 0.4f);
-    wallMaterial->GetMaterialInfo().Ks = glm::vec3(0.4f, 0.4f, 0.4f);
+    wallMaterial->GetMaterialInfo().Ks = glm::vec3(0.7f, 0.7f, 0.7f);
     wallMaterial->GetMaterialInfo().shininess = 50.0f;
     wallMaterials.push_back(wallMaterial);
 }

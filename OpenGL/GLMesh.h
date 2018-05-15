@@ -31,6 +31,7 @@ public:
 
         virtual void RenderWithMode(TRenderingMode mode, TPolygonRenderStyle style) const override;
 
+
         void SetSize(int size) { this->size = size; }
 
     private:
@@ -54,14 +55,15 @@ public:
 private:
     class Buffer {
     public:
-        Buffer(const Tensor data);
+        Buffer(const Tensor& data);
         ~Buffer();
 
+        void SetData(const Tensor& data);
         void Bind();
         void Unbind();
 
     private:
-        const Tensor data;
+        Tensor data;
         GLuint vbo;
 
         Buffer(const Buffer& other) = delete;

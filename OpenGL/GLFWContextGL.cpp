@@ -43,6 +43,7 @@ TG_Status GLFWContextGL::Activate()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     return TG_Ok;
 }
 
@@ -107,6 +108,27 @@ void GLFWContextGL::DeleteTextureSampler(const ITextureSampler* sampler)
     auto storedSampler = textureSamplers.find(sampler);
     assert(storedSampler != textureSamplers.end());
     textureSamplers.erase(storedSampler);
+}
+
+IFramebuffer* GLFWContextGL::CreateFramebuffer(int width, int height)
+{
+    GLFramebuffer* buffer = new GLFramebuffer(*this, width, height);
+    framebuffers.insert({buffer, nullptr}).first->second.reset(buffer);
+    return buffer;
+}
+
+void GLFWContextGL::DeleteFramebuffer(const IFramebuffer* buffer)
+{
+    auto storedBuffer = framebuffers.find(buffer);
+    assert(storedBuffer != framebuffers.end());
+    framebuffers.erase(storedBuffer);
+}
+
+float GLFWContextGL::GetScreenDepthAt(int x, int y) const
+{
+    float value = -1.0f;
+    glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &value);
+    return value;
 }
 
 std::unique_ptr<IMaterial> GLFWContextGL::CreateMaterial(ITextureSampler* sampler)

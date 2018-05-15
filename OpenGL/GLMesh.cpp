@@ -17,6 +17,7 @@
 #include <GLMesh.h>
 #include <EngineException.h>
 #include <Formats.h>
+#include <Log.h>
 
 namespace TierGine {
 
@@ -100,14 +101,20 @@ void GLMesh::LoadFromPath(std::string path)
 
 void GLMesh::AddAtribute(int id, const Tensor& value)
 {
-    attributes.insert({id, std::make_unique<Buffer>(value)});
+    if(attributes.find(id) == attributes.end()) {
+        attributes.insert({id, std::make_unique<Buffer>(value)});
+        if(id == 0) {
+            this->size = value.GetSize();
+            renderer.SetSize(value.GetSize());
+        }
+    } else {
+        assert(this->Size() == value.GetSize());
+        attributes.find(id)->second->SetData(value);
+        return;
+    }
     auto& buffer = attributes.find(id)->second;
     glBindVertexArray(vao);
     buffer->Bind();
-    if(id == 0) {
-        this->size = value.GetSize();
-        renderer.SetSize(value.GetSize());
-    }
     glEnableVertexAttribArray(id);
     glVertexAttribPointer(id, value.GetChannels(), Type(value.GetType()), GL_FALSE, 0, 0);
     buffer->Unbind();
@@ -135,11 +142,11 @@ void GLMesh::Renderer::RenderWithMode(TRenderingMode mode, TPolygonRenderStyle s
     glDrawArrays(GL_TRIANGLES, 0, size);
 }
 
-GLMesh::Buffer::Buffer(const Tensor data) : data(data)
+GLMesh::Buffer::Buffer(const Tensor& data) : data(data)
 {
     glGenBuffers(1, &vbo);
     Bind();
-    glBufferData(GL_ARRAY_BUFFER, data.GetSize() * data.GetChannels() * sizeof(float), data.GetRawPointer(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, data.GetSize() * data.GetChannels() * sizeof(float), data.GetRawPointer(), GL_DYNAMIC_DRAW);
 
     Unbind();
 }
@@ -147,6 +154,15 @@ GLMesh::Buffer::Buffer(const Tensor data) : data(data)
 GLMesh::Buffer::~Buffer()
 {
     glDeleteBuffers(1, &vbo);
+}
+
+void GLMesh::Buffer::SetData(const Tensor& data)
+{
+    Bind();
+    this->data = data;
+    glBufferSubData(GL_ARRAY_BUFFER, 0, data.GetSize() * data.GetChannels() * sizeof(float), data.GetRawPointer());
+    glGetError();
+    Unbind();
 }
 
 void GLMesh::Buffer::Bind()

@@ -85,8 +85,10 @@ void BasicModel::SetRenderingMode(TRenderingMode mode, TPolygonRenderStyle style
 void BasicModel::Draw()
 {
     mesh.Bind();
-    if(material != nullptr) {
+    if(material != nullptr && materialVariable.IsValid()) {
         materialVariable.Set(material->GetMaterialInfo());
+    }
+    if(material != nullptr) {
         material->Activate(pipeline, textureValue, normalMapValue);
     }
     mesh.GetRenderer().RenderWithMode(mode, style);

@@ -26,9 +26,11 @@ void UniformVariable::Set<LightInfo>(const LightInfo& value)
 {
     assert(IsValid());
     pipeline->SetUniformVariable(name + ".pos", CreateTensor(value.pos));
+    pipeline->SetUniformVariable(name + ".dir", CreateTensor(value.dir));
     pipeline->SetUniformVariable(name + ".La", CreateTensor(value.La));
     pipeline->SetUniformVariable(name + ".Ld", CreateTensor(value.Ld));
     pipeline->SetUniformVariable(name + ".Ls", CreateTensor(value.Ls));
+    pipeline->SetUniformVariable(name + ".ang", CreateTensor(value.ang));
 }
 
 }

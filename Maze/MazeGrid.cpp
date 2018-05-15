@@ -15,6 +15,10 @@
    ==============================================================================
 */
 #include <MazeGrid.h>
+#include <MazeConstMeshes.h>
+#include <cmath>
+
+using namespace MazeConstMeshes;
 
 Grid::Grid(int x, int y, int z) : x(x), y(y), z(z) {
     grid.resize(x);
@@ -75,6 +79,28 @@ void checkClose(float newDist, float& oldDist, int newId, int& id) {
 
 }
 
+MeshData::MeshData(const std::initializer_list<TierGine::Tensor>& init):
+    v(*init.begin()),
+    norm(*(init.begin()+1)),
+    uv(*(init.begin()+2))
+{
+    assert(init.size() == 3);
+}
+
+MeshData::MeshData(MeshData&& other):
+    v(std::move(other.v)),
+    norm(std::move(other.norm)),
+    uv(std::move(other.uv))
+{
+}
+
+void MeshData::Append(MeshData&& other)
+{
+    v = v.Add(other.v);
+    norm = norm.Add(other.norm);
+    uv = uv.Add(other.uv);
+}
+
 std::unique_ptr<TG::PhysicsWorld::ICollisionsIterator> Grid::GetCollisions(TierGine::IPhysicsObject* obj) const
 {
     glm::vec3 center = obj->GetCenter();
@@ -94,6 +120,62 @@ std::unique_ptr<TG::PhysicsWorld::ICollisionsIterator> Grid::GetCollisions(TierG
     }
     return iterator;
 }
+
+WallTarget Grid::GetTarget(const glm::vec3& point, const glm::vec3& direction) const
+{
+    int x = point.x;
+    int y = 0;
+    int z = point.z;
+
+    Byte selectedWall = 0;
+    WalledEntry* entry = grid[x][y][z].get();
+    for(Byte wall = FrontWall; wall < Floor; wall <<= 1) {
+        auto collisionSource = entry->GetCollisionFor(wall);
+        if(collisionSource == nullptr) {
+            continue;
+        }
+        if(collisionSource->GetAABox().Extend(0.01f).Collide(glm::vec3(point.x,0.5f,point.z))) {
+            selectedWall = wall;
+            break;
+        }
+    }
+    bool forward = false;
+    if(selectedWall & (FrontWall | BackWall)) {
+        forward = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), direction) <  0.0f;
+    } else {
+        forward = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), direction) <  0.0f;
+    }
+    return {entry, selectedWall, forward};
+}
+
+glm::vec2 WalledEntry::GetDirectionFrom(Byte wall, bool forward) const
+{
+    if(wall & (FrontWall | BackWall) ) {
+        return glm::vec2(M_PI_2, forward ? 0.0f : M_PI);
+    }
+    if(wall & (RightWall | LeftWall)) {
+        return glm::vec2(M_PI_2, forward ? -M_PI_2 : M_PI_2);
+    }
+    assert(false);
+}
+
+glm::vec3 WalledEntry::GetPositionFrom(unsigned char wall, bool forward) const
+{
+    if(wall & LeftWall) {
+        return glm::vec3(GetPosition().x + 0.3f, GetPosition().y + 0.5f, GetPosition().z + (forward ? 0.6f : 0.4f)  );
+    }
+    if(wall & RightWall) {
+        return glm::vec3(GetPosition().x + 0.7f, GetPosition().y + 0.5f, GetPosition().z + (forward ? 0.6f : 0.4f)  );
+    }
+    if(wall & BackWall) {
+        return glm::vec3(GetPosition().x + (forward ? 0.65f : 0.35f), GetPosition().y + 0.5f, GetPosition().z + 0.3f  );
+    }
+    if(wall & FrontWall) {
+        return glm::vec3(GetPosition().x + (forward ? 0.65f : 0.35f), GetPosition().y + 0.5f, GetPosition().z + 0.7f  );
+    }
+    assert(false);
+}
+
 
 void WalledEntry::GenerateCollisions()
 {
@@ -125,6 +207,75 @@ void WalledEntry::GetCollisionSources(std::vector<TierGine::ICollisionSource*>& 
     for(auto& source: collisions ) {
         sources.push_back(source.get());
     }
+}
+
+TG::ICollisionSource* WalledEntry::GetCollisionFor(Byte wall)
+{
+    if(collisions.size() == 0) {
+        GenerateCollisions();
+    }
+    int index = 0;
+    if(directions & LeftWall) {
+        if(wall == LeftWall) {
+            return collisions[index].get();
+        }
+        index++;
+    }
+    if(directions & RightWall) {
+        if(wall == RightWall) {
+            return collisions[index].get();
+        }
+        index++;
+    }
+    if(directions & BackWall) {
+        if(wall == BackWall) {
+            return collisions[index].get();
+        }
+        index++;
+    }
+    if(directions & FrontWall) {
+        if(wall == FrontWall) {
+            return collisions[index].get();
+        }
+        index++;
+    }
+    return nullptr;
+}
+
+MeshData WalledEntry::GetMesh() const
+{
+    Byte walls = this->GetWalls();
+    if((walls & (FrontWall | BackWall | LeftWall | RightWall)) == 0) {
+        return {TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr)};
+    }
+
+    TG::Tensor vertices(0, 3, nullptr);
+    TG::Tensor normals(0, 3, nullptr);
+    TG::Tensor uvs(0, 2, nullptr);
+
+    MeshData result = {vertices, normals, uvs};
+
+    if(walls & FrontWall) {
+        result.Append(GetFrontWall(GetPosition()));
+    } else {
+        result.Append(GetFrontWallStub(GetPosition()));
+    }
+    if(walls & BackWall) {
+        result.Append(GetBackWall(GetPosition()));
+    } else {
+        result.Append(GetBackWallStub(GetPosition()));
+    }
+    if(walls & RightWall) {
+        result.Append(GetRightWall(GetPosition()));
+    } else {
+        result.Append(GetRightWallStub(GetPosition()));
+    }
+    if(walls & LeftWall) {
+        result.Append(GetLeftWall(GetPosition()));
+    } else {
+        result.Append(GetLeftWallStub(GetPosition()));
+    }
+    return result;
 }
 
 void CollisionsIterator::Add(WalledEntry& entry)
@@ -204,4 +355,80 @@ int FixedBox::getClosestPlaneIndex(const glm::vec3& v)
     checkClose(abs(v.y - higher.y), dist, 4, index);
     checkClose(abs(v.z - higher.z), dist, 5, index);
     return index;
+}
+
+MeshData HorizontalCell::GetMesh() const
+{
+    Byte walls = this->GetWalls();
+    if((walls & (Floor | Ceiling)) == 0) {
+        return { TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr), TG::Tensor(0, 3, nullptr)};
+    }
+    TG::Tensor vertices(0, 3, nullptr);
+    TG::Tensor normals(0, 3, nullptr);
+    TG::Tensor uvs(0, 2, nullptr);
+    if( walls & Floor) {
+        float xLower = this->GetLower().x;
+        float xHigher = this->GetHigher().x;
+        float y = this->GetHigher().y;
+        float zLower = this->GetLower().z;
+        float zHigher = this->GetHigher().z;
+        vertices = vertices.Add(TG::CreateTensor(6, 3, {
+                                        xLower, y, zHigher,
+                                        xLower, y, zLower,
+                                        xHigher, y, zHigher,
+
+                                        xLower, y, zLower,
+                                        xHigher, y, zLower,
+                                        xHigher, y, zHigher
+                                    }));
+        normals = normals.Add(TG::CreateTensor(6, 3, {
+                                                 0.0f, 1.0f, 0.0f,
+                                                 0.0f, 1.0f, 0.0f,
+                                                 0.0f, 1.0f, 0.0f,
+                                                 0.0f, 1.0f, 0.0f,
+                                                 0.0f, 1.0f, 0.0f,
+                                                 0.0f, 1.0f, 0.0f,
+                                               }));
+        uvs = uvs.Add(TG::CreateTensor(6, 2, {
+                                                0.0f, zHigher,
+                                                 0.0f, 0.0f,
+                                                 xHigher, zHigher,
+                                                 0.0f, 0.0f,
+                                                 xHigher, 0.0f,
+                                                 xHigher, zHigher,
+                                               }));
+    }
+    if( walls & Ceiling) {
+        float xLower = this->GetLower().x;
+        float xHigher = this->GetHigher().x;
+        float y = this->GetLower().y;
+        float zLower = this->GetLower().z;
+        float zHigher = this->GetHigher().z;
+        vertices = vertices.Add(TG::CreateTensor(6, 3, {
+                                        xLower, y, zLower,
+                                        xLower, y, zHigher,
+                                        xHigher, y, zHigher,
+
+                                        xLower, y, zLower,
+                                        xHigher, y, zHigher,
+                                        xHigher, y, zLower
+                                    }));
+        normals = normals.Add(TG::CreateTensor(6, 3, {
+                                                 0.0f, -1.0f, 0.0f,
+                                                 0.0f, -1.0f, 0.0f,
+                                                 0.0f, -1.0f, 0.0f,
+                                                 0.0f, -1.0f, 0.0f,
+                                                 0.0f, -1.0f, 0.0f,
+                                                 0.0f, -1.0f, 0.0f,
+                                               }));
+        uvs = uvs.Add(TG::CreateTensor(6, 2, {
+                                                 0.0f, 0.0f,
+                                                 0.0f, zHigher,
+                                                 xHigher, zHigher,
+                                                 0.0f, 0.0f,
+                                                 xHigher, zHigher,
+                                                 xHigher, 0.0f
+                                               }));
+    }
+    return { vertices, normals, uvs };
 }

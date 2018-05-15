@@ -40,6 +40,7 @@ private:
     IContext& context;
 };
 
+
 class GLTextureSampler: public ITextureSampler {
 public:
     GLTextureSampler(IContext& context, std::string unifromName);

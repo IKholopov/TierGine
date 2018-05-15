@@ -47,12 +47,11 @@ protected:
     IContext* GetContext() const { return window.GetContext(); }
     IBackend& GetBackend() const { return *backend; }
     InputProvider& GetInputProvider() { return window.GetInputProvider(); }
+    const WindowGLFW& GetWindow() const { return window; }
 
 private:
     GLFWContextGL* backend;
-    TierGine::WindowGLFW window;
-
-
+    WindowGLFW window;
 };
 
 

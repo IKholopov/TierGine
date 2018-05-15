@@ -101,6 +101,7 @@ void GLTextureSampler::SetInterpolation(const Interpolation& interpolation) {
         auto glInterpolation = ParseInterploation(interpolation);
         glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, glInterpolation);
         glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, glInterpolation);
+        glSamplerParameteri(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
     }
 }
 

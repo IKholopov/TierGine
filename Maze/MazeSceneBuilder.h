@@ -19,6 +19,8 @@
 #include <SimpleScene.h>
 #include <BasicFpsCamera.h>
 #include <MazeGrid.h>
+#include <MazePortalGun.h>
+#include <MazePhysics.h>
 #include <Backend.h>
 #include <fstream>
 #include <unordered_map>
@@ -39,7 +41,8 @@ public:
     TG::SimpleScene* CreateSceneAndGrid(TG::IContext& context,
                             const TG::ICamera& camera,
                             TierGine::IPipeline& defaultPipeline);
-    TG::PhysicsWorld* CreatePhysicsEngine();
+    MazePhysicsEngine* CreatePhysicsEngine();
+    std::unique_ptr<MazePortalGun> CreatePortalGun(TG::IContext& context, MazePhysicsEngine*engine, TG::IScene* scene);
 
 private:
     std::vector<std::vector<std::string>> map;

@@ -22,7 +22,7 @@ namespace TierGine {
 BasicFpsCamera::BasicFpsCamera():
     momentum(0.0f, 0.0f, 0.0f),
     filter(nullptr),
-    speed(0.05f),
+    speed(0.02f),
     previousX(0),
     previousY(0),
     initialized(false)
@@ -89,7 +89,6 @@ void BasicFpsCamera::onMouse(int x, int y)
 
 void BasicFpsCamera::onForward(int action)
 {
-    glm::vec3 position = cameraView.GetPosition();
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     float& theta = direction[1];
@@ -102,7 +101,6 @@ void BasicFpsCamera::onForward(int action)
 
 void BasicFpsCamera::onBackward(int action)
 {
-    glm::vec3 position = cameraView.GetPosition();
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     float& theta = direction[1];
@@ -115,7 +113,6 @@ void BasicFpsCamera::onBackward(int action)
 
 void BasicFpsCamera::onRight(int action)
 {
-    glm::vec3 position = cameraView.GetPosition();
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     phi += M_PI_2;
@@ -128,7 +125,6 @@ void BasicFpsCamera::onRight(int action)
 
 void BasicFpsCamera::onLeft(int action)
 {
-    glm::vec3 position = cameraView.GetPosition();
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
     phi += M_PI_2;

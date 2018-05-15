@@ -23,9 +23,12 @@ uniform sampler2D normalTex;
 struct LightInfo
 {
     vec3 pos;
+    vec3 dir;
     vec3 La;
     vec3 Ld;
     vec3 Ls;
+    float ang;
+
 };
 uniform LightInfo light[2];
 
@@ -40,6 +43,7 @@ uniform MaterialInfo material;
 
 in mat3 TBN;
 in vec4 lightPosCamSpace[2];
+in vec4 lightSourceDirCamSpace[2];
 in vec4 posCamSpace;
 in vec2 texCoord;
 
@@ -52,13 +56,18 @@ void main()
     for(int i = 0; i < 2; ++i) {
         vec3 dist = lightPosCamSpace[i].xyz - posCamSpace.xyz;
         vec3 lightDirCamSpace = normalize(dist);
-        float distL2 = max(length(dist), 1.4);
+        float distL2 = max(max(length(dist), 1.4), 0.0);
+        float angSize = light[i].ang;
+        float angleMult = 1.0;
+        if( angSize < 1 ) {
+            angleMult = min(- cos( angSize * acos(dot(dist, lightSourceDirCamSpace[i].xyz) / length(dist) / length(lightSourceDirCamSpace[i].xyz))) / angSize, 3.0);
+        }
         vec3 normal = normalize(texture(normalTex, texCoord).rgb * 2.0 - 1.0);
 
         float NdotL = max(dot(normal, TBN * lightDirCamSpace.xyz), 0.0);
 
 
-        color += diffuseColor * ( (light[i].La * material.Ka) / pow(distL2,2) + (light[i].Ld * material.Kd * NdotL) / pow(distL2,2) ); //цвет вершины
+        color += max(angleMult * diffuseColor * ( (light[i].La * material.Ka) / pow(distL2,2) + (light[i].Ld * material.Kd * NdotL) / pow(distL2,2) ), vec3(0.0f));
         if (NdotL > 0.0) {
             vec3 viewDirection = normalize(- posCamSpace.xyz);
             vec3 halfVector = TBN * normalize(lightDirCamSpace.xyz + viewDirection);
@@ -66,7 +75,7 @@ void main()
             float blinnTerm = max(dot(normal, halfVector), 0.0);
             blinnTerm = pow(blinnTerm, material.shininess);
 
-            color += light[i].Ls * material.Ks * blinnTerm / pow(distL2,2);
+            color += max(angleMult * light[i].Ls * material.Ks * blinnTerm / pow(distL2,2), vec3(0.0f));
         }
     }
 

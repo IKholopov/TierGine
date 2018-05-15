@@ -34,6 +34,7 @@ public:
     virtual void Build() override;
     virtual void Activate() const override;
     virtual UniformVariable GetUniformVariable(std::string name) const override;
+    virtual bool HasUniformVariable(std::string name) const override;
     virtual void SetUniformVariable(std::string name, Tensor value) const override;
     virtual void SetUniformVariable(std::string name, int value) const override;
     virtual const std::unordered_map<std::string, UniformVariable>& GetUniformVariables() const override

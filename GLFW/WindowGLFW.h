@@ -85,6 +85,7 @@ public:
     TG_Status Create(bool useContext);
     IContext* GetContext() const { return context.get(); }
     InputProvider& GetInputProvider() { return inputManager; }
+    const Config& GetConfig() const { return config; }
     void Close();
 
 private:

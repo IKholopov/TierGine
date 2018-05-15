@@ -40,7 +40,7 @@ public:
 
     // ICamera interface
     virtual const glm::vec2& GetDirection() const override { return direction; }
-    virtual void SetDirection(glm::vec2& direction) override { this->direction = direction; }
+    virtual void SetDirection(const glm::vec2& direction) override { this->direction = direction; }
     virtual float GetFOV() const override { return fov; }
     virtual void SetFOV(float fov) override { this->fov = fov; }
     virtual float GetAspectRatio() const override { return ratio; }
@@ -49,7 +49,9 @@ public:
     virtual void SetNearClipping(float clipping) override { this->nearClipping = clipping; }
     virtual float GetFarClipping() const override { return farClipping; }
     virtual void SetFarClipping(float clipping) override { this->farClipping = clipping; }
+    virtual float GetDistanceToPixel(int x, int y, const IContext& context) const override;
     virtual const CameraData GetCameraProjections() const override;
+
 
 private:
     mutable std::mutex criticalSection;

@@ -75,7 +75,7 @@ void GLProgram::Build()
     glLinkProgram(programId);
     int status = 0;
     glGetProgramiv(programId, GL_LINK_STATUS, &status);
-    if(status != GL_TRUE) {
+    if(status == GL_FALSE) {
         throw EngineException("Failed to compile program");
     }
     GLint count, size;
@@ -113,6 +113,12 @@ UniformVariable GLProgram::GetUniformVariable(std::string name) const
         throw EngineException("Trying to get non-existing uniform - " + name);
     }
     return variable->second;
+}
+
+bool GLProgram::HasUniformVariable(std::string name) const
+{
+    auto variable = uniforms.find(name);
+    return variable != uniforms.end();
 }
 
 void GLProgram::SetUniformVariable(std::string name, Tensor value) const

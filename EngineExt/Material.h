@@ -17,6 +17,8 @@
 #pragma once
 
 #include <Texture.h>
+#include <Pipeline.h>
+#include <Uniform.h>
 #include <glm/glm.hpp>
 
 namespace TierGine {
@@ -36,8 +38,8 @@ struct MaterialInfo
 };
 
 interface IMaterial : public ITextureSampler {
-    virtual void Activate(IPipeline* pipeline, UniformVariable& textureValue,
-                                 UniformVariable& normalMapVariable) = 0;
+    virtual void Activate(IPipeline* pipeline, UniformVariable texture,
+                          UniformVariable normal) = 0;
     virtual MaterialInfo& GetMaterialInfo() = 0;
     virtual const MaterialInfo& GetMaterialInfo() const = 0;
     virtual void SetTexture(ITexture* texture) = 0;

@@ -24,9 +24,11 @@ uniform mat4 projectionMatrix;
 struct LightInfo
 {
     vec3 pos;
+    vec3 dir;
     vec3 La;
     vec3 Ld;
     vec3 Ls;
+    float ang;
 };
 uniform LightInfo light[2];
 
@@ -38,6 +40,7 @@ layout(location = 4) in vec3 vertexBitangent;
 
 out mat3 TBN;
 out vec4 lightPosCamSpace[2];
+out vec4 lightSourceDirCamSpace[2];
 out vec4 posCamSpace;
 out vec2 texCoord;
 
@@ -54,6 +57,7 @@ void main()
     posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
     for(int i = 0; i < 2; ++i) {
         lightPosCamSpace[i] = viewMatrix * vec4(light[i].pos, 1.0);
+        lightSourceDirCamSpace[i] = viewMatrix * vec4(light[i].dir, 0.0);
     }
 
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);

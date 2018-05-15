@@ -63,6 +63,17 @@ std::unique_ptr<Listener> InputProvider::AddMouseListener(std::function<void(int
     return listener;
 }
 
+std::unique_ptr<Listener> InputProvider::AddMouseButtonListener(int key, std::function<void (int)> action, float timeout)
+{
+    if(mouseButtonSubscribers.find(key) == mouseButtonSubscribers.end()) {
+        mouseButtonSubscribers.insert({key, std::set<Listener*>()});
+    }
+    std::set<Listener*>& set = mouseButtonSubscribers.find(key)->second;
+    std::unique_ptr<Listener> listener(new KeyListener(action, *this, timeout));
+    set.insert(listener.get());
+    return listener;
+}
+
 void InputProvider::OnKey(int key, int action)
 {
     auto keySubs = keySubscribers.find(key);
@@ -78,6 +89,17 @@ void InputProvider::OnMouse(double x, double y)
 {
     for(auto it = mouseSubscribers.begin(); it != mouseSubscribers.end(); ++it) {
         static_cast<MouseListener*>(*it)->OnEvent(x, y);
+    }
+}
+
+void InputProvider::OnMouseButton(int key)
+{
+    auto keySubs = mouseButtonSubscribers.find(key);
+    if(keySubs != mouseButtonSubscribers.end()) {
+        std::set<Listener*>& set = keySubs->second;
+        for(auto it = set.begin(); it != set.end(); ++it) {
+            static_cast<KeyListener*>(*it)->OnEvent(0);
+        }
     }
 }
 

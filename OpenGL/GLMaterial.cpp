@@ -28,16 +28,17 @@ GLMaterial::GLMaterial(ITextureSampler* sampler):
     assert(sampler != 0);
 }
 
-void GLMaterial::Activate(IPipeline* pipeline, UniformVariable& textureValue, UniformVariable& normalMapVariable)
+void GLMaterial::Activate(IPipeline* pipeline, UniformVariable textureVariable,
+                          UniformVariable normalVariable)
 {
     if(texture != nullptr) {
-        textureValue.Set<int>(0);
+        textureVariable.Set<int>(0);
         glActiveTexture(GL_TEXTURE0);
         sampler->BindAt(0);
         texture->Activate();
     }
-    if(normal != nullptr) {
-        normalMapVariable.Set<int>(1);
+    if(normal != nullptr && normalVariable.IsValid()) {
+        normalVariable.Set<int>(1);
         glActiveTexture(GL_TEXTURE1);
         sampler->BindAt(1);
         normal->Activate();

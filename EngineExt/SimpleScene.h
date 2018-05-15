@@ -37,13 +37,14 @@ public:
 
     SimpleScene(const ICamera& camera, IPipeline& defaultPipeline);
 
-    void SetCamera(const ICamera* camera) { this->camera = camera; }
     LightningScheme& Light() { return lights; }
 
     // IScene interface
     virtual void Add(std::unique_ptr<ISceneObject>& object) override;
     virtual void Render() override;
     virtual void Update() override;
+    virtual void SetCamera(const ICamera* camera) override
+        { this->camera = camera; }
 
 private:
     std::vector<std::unique_ptr<ISceneObject>> objects;
