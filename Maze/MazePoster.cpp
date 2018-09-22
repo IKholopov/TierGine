@@ -51,7 +51,7 @@ static TG::Tensor GetNormalUVsData(const WalledEntry* entry, bool forward) {
 
 MeshData MazePoster::GetMesh()
 {
-    const float offset = 0.015f;
+    const float offset = 0.02f;
     MeshData base = GetBaseData(entry);
     auto walls = entry->GetWalls();
     if(forward) {

@@ -121,6 +121,14 @@ void GLMesh::AddAtribute(int id, const Tensor& value)
     glBindVertexArray(0);
 }
 
+const Tensor GLMesh::GetAtribute(int id) const
+{
+    if(attributes.find(id) == attributes.end()) {
+        return CreateTensor(0, 0, std::initializer_list<float>());
+    }
+    return attributes.at(id)->GetData();
+}
+
 void GLMesh::Bind() const
 {
     assert(attributes.find(0) != attributes.end());

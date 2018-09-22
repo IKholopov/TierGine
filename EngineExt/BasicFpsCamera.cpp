@@ -135,7 +135,7 @@ void BasicFpsCamera::onLeft(int action)
     }
 }
 
-void BasicFpsCamera::Update(glm::vec3& center, glm::vec3& momentum)
+void BasicFpsCamera::Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction)
 {
     momentum = this->momentum;
     center += speed * momentum;

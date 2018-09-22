@@ -69,7 +69,7 @@ void PhysicsWorld::RemoveImpact(ImpactSource* source)
     }
 }
 
-void ImpactSource::ImpactSolver::Update(glm::vec3& center, glm::vec3& momentum)
+void ImpactSource::ImpactSolver::Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction)
 {
     momentum = this->moment;
     center = this->position;

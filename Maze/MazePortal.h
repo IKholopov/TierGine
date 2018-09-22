@@ -41,9 +41,14 @@ public:
     virtual void SetPipeline(TG::IPipeline* pipeline, TG::UniformVariable textureVar=TG::UniformVariable{},
                              TG::UniformVariable normalMapVar=TG::UniformVariable{},
                              TG::UniformVariable materialVar=TG::UniformVariable{}) override;
+    virtual const glm::vec3 GetPosition() const override { return entry->GetPositionFrom(wall, forward); }
+
+    glm::vec3 GetDirection() const;
+
     glm::mat4x4 GetViewMatrix(bool direct) const;
-    glm::vec4 GetPlane() const;
+    glm::vec4 GetPlane(float distance, const glm::mat4x4& camView) const;
     bool IsOpened() const { return opened; }
+    void GetUVs(const TG::CameraData& cam);
 
 private:
     TG::ICamera* camera;

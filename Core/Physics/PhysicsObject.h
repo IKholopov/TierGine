@@ -25,7 +25,7 @@ namespace TierGine {
 interface IPhysicsObject;
 
 interface ICollisionSolver {
-    virtual void Update(glm::vec3& center, glm::vec3& momentum) = 0;
+    virtual void Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction) = 0;
 };
 
 interface ICollisionSource {

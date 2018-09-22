@@ -56,6 +56,8 @@ public:
                              UniformVariable materialVar=UniformVariable{}) override;
 
     void SetMaterial(IMaterial* material) { this->material = material; }
+    const Tensor GetGeometry() const { return mesh.GetAtribute( 0 ); }
+    void UpdateUVs(const Tensor& uv) { mesh.AddAtribute(2, uv); }
 
 private:
     glm::mat4 mat;

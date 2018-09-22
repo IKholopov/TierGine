@@ -18,16 +18,21 @@
 
 #include <Physics/PhysicsEngine.h>
 #include <MazeGrid.h>
+class MazePortalGun;
 
 class MazePhysicsEngine : public TG::PhysicsWorld {
 public:
-    MazePhysicsEngine(std::unique_ptr<const Grid> grid) : grid(std::move(grid)) {}
-    MazePhysicsEngine(MazePhysicsEngine&& other) : grid(std::move(other.grid)) {}
+    MazePhysicsEngine(std::unique_ptr<const Grid> grid) : grid(std::move(grid)), gun(nullptr) {}
+    MazePhysicsEngine(MazePhysicsEngine&& other) : grid(std::move(other.grid)), gun(other.gun) {}
 
     virtual void AddStatic(TierGine::ICollisionSource* collisionSource) override { assert(false); }
     virtual void RemoveStatic(TierGine::ICollisionSource* collisionSource) override { assert(false); }
 
     WallTarget GetTarget(const glm::vec3& point, const glm::vec3& direction) const { return grid->GetTarget(point, direction); }
+    const Grid* GetGrid() const { return grid.get(); }
+    void SetPortalGun(MazePortalGun* portalGun) {
+        gun = portalGun;
+    }
 
 protected:
     virtual std::unique_ptr<ICollisionsIterator> GetCollisions(TierGine::IPhysicsObject* obj) override;
@@ -35,6 +40,7 @@ protected:
 
 private:
     std::unique_ptr<const Grid> grid;
+    MazePortalGun* gun;
 };
 
 class FixedCoords : public TG::ImpactSource {
@@ -49,4 +55,5 @@ public:
 
 private:
     float y;
+
 };

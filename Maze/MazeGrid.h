@@ -81,6 +81,7 @@ public:
     void GenerateCollisions();
     glm::vec2 GetDirectionFrom(Byte wall, bool forward) const;
     glm::vec3 GetPositionFrom(Byte wall, bool forward) const;
+    TG::Tensor GetMapData() const;
 
     virtual void GetCollisionSources(std::vector<TG::ICollisionSource*>& sources) override;
     virtual TG::ICollisionSource* GetCollisionFor(Byte wall);
@@ -132,6 +133,11 @@ public:
     Grid(int x, int y, int z);
 
     std::vector<std::vector<std::unique_ptr<WalledEntry>>>& operator[](int x) {
+        assert(this->x > x && x >=0);
+        return grid[x];
+    }
+
+    const std::vector<std::vector<std::unique_ptr<WalledEntry>>>& operator[](int x) const{
         assert(this->x > x && x >=0);
         return grid[x];
     }

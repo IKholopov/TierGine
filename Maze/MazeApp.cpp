@@ -89,6 +89,8 @@ private:
     FPSCounter counter;
     std::unique_ptr<TG::IPipeline> pipeline;
     std::unique_ptr<TG::SimpleScene> scene;
+    std::unique_ptr<OnScreen> onScreen;
+    std::unique_ptr<Map> map;
     std::unique_ptr<MazePhysicsEngine> physics;
     std::unique_ptr<TG::ImpactSource> yImpact;
     std::vector<std::unique_ptr<TG::IMaterial> > materials;
@@ -117,10 +119,11 @@ TG_Status MazeApp::MainLoop()
         initialized = true;
     }
     portalGun->RenderPortals(scene.get(), &mazeCamera.GetCamera());
+    //portalGun->RenderPortalsRecursive(scene.get(), &mazeCamera.GetCamera());
     scene->SetCamera(activeCamera);
     scene->Render();
-
     measureMazeCamDistance();
+    scene->RenderBasicDrawables();
 
     counter.Count();
     return GLBaseApp::MainLoop();
@@ -137,6 +140,9 @@ TG_Status MazeApp::RegularUpdate()
             glm::vec3 camDir = glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
             scene->Light()[1].dir = camDir;
             camCube->SetOverriden(glm::inverse(mazeCamera.GetCamera().GetCameraProjections().View));
+            auto camPos = mazeCamera.GetCamera().GetPosition();
+            map->SetPosition(-camPos[2], -camPos[0]);
+            map->SetAngle(mazeCamera.GetCamera().GetDirection()[0]);
         }
 
         physics->ApplyWorldUpdate();
@@ -158,9 +164,9 @@ void MazeApp::initializeBuffers()
     MazeSceneBuilder builder(materials, materialFiles, GetBackend());
     scene.reset(builder.CreateSceneAndGrid(*GetContext(), freeCamera.GetCamera(), *pipeline));
     physics.reset(builder.CreatePhysicsEngine());
-    std::unique_ptr<TG::IPhysicsObject> playerObjectFreeCam(new TG::PhysicsBox({1.0f, 0.5f, 1.0f}, {0.0f, 0.0f,  0.0f}, 0.3f));
+    std::unique_ptr<TG::IPhysicsObject> playerObjectFreeCam(new TG::PhysicsBox({1.0f, 0.5f, 1.0f}, {0.0f, 0.0f,  0.0f}, {0.0f, 0.0f, 0.0f}, 0.3f));
     freeCamera.SetPhysicsObject(std::move(playerObjectFreeCam));
-    std::unique_ptr<TG::IPhysicsObject> playerObject(new TG::PhysicsBox({1.0f, 0.5f, 1.0f}, {0.0f, 0.0f,  0.0f}, 2.0f));
+    std::unique_ptr<TG::IPhysicsObject> playerObject(new TG::PhysicsBox({1.0f, 0.5f, 1.0f}, {0.0f, 0.0f,  0.0f}, {0.0f, 0.0f, 0.0f}, 2.0f));
     mazeCamera.SetPhysicsObject(std::move(playerObject));
     yImpact.reset(new FixedCoords(0.5f, physics.get()));
     yImpact->OnBind(mazeCamera.GetPhysics());
@@ -168,12 +174,17 @@ void MazeApp::initializeBuffers()
     physics->AddToWorld(mazeCamera.GetPhysics());
     portalGun = std::move(builder.CreatePortalGun(*GetContext(), physics.get(), scene.get()));
     measureMazeCamDistance();
+    physics->SetPortalGun(portalGun.get());
     std::unique_ptr<TG::ISceneObject> cube = std::make_unique<DebugCube>(*GetContext());
     TG::SimplePipeline cubePipe(*GetContext(), "./res/shaders/rgb.vert.glsl", "./res/shaders/rgb.frag.glsl");
     cube->SetPipeline(cubePipe.GetPipeline());
     camCube = static_cast<DebugCube*>(cube.get());
     scene->Add(cube);
     portalGun->PerformShot(mazeCamera.GetCamera(), camDistance, MazePortalGun::C_ORANGE);
+    onScreen = std::move(builder.CreateScreenQuad(*GetContext()));
+    //scene->AddBasicDrawable(onScreen.get());
+    map = std::move(builder.CreateMap(*GetContext(), physics->GetGrid()));
+    scene->AddBasicDrawable(map.get());
 }
 
 void MazeApp::initializePipeline()
@@ -214,6 +225,7 @@ void MazeApp::measureMazeCamDistance()
         if(&mazeCamera.GetCamera() == activeCamera) {
             camDistance = mazeCamera.GetCamera().GetDistanceToPixel(x, y,
                                         *GetContext());
+            //TG::Log::Info() << std::to_string(camDistance) << std::endl;
         }
     }
 }

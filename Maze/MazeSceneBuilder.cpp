@@ -26,8 +26,8 @@
 #include <TBN.h>
 #include <glm/glm.hpp>
 
-static int BufferWidth = 1024;
-static int BufferHeight = 2560;
+static int BufferWidth = 1920;//1024;
+static int BufferHeight = 1080;//2560;
 
 namespace {
 
@@ -248,6 +248,7 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
                     defaultPipeline.GetUniformVariable("material"));
         scene->Add(model);
     }
+
     TG::LightInfo light;
     light.pos = glm::vec3(1.0f, 0.7f, 1.0f);
     light.dir = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -280,11 +281,47 @@ std::unique_ptr<MazePortalGun> MazeSceneBuilder::CreatePortalGun(TierGine::ICont
     TG::SimplePipeline portalPipeline(context, "./res/shaders/portal.vert.glsl",
             "./res/shaders/portal.frag.glsl");
     TG::ITextureSampler* portalSampler = context.CreateTextureSampler("portaledTexture");
-    auto blueMaterial = backend.CreateMaterial(portalSampler);
-    auto orangeMaterial = backend.CreateMaterial(portalSampler);
+    portalSampler->SetTileMode(TG::ITextureSampler::TM_None);
+    materials.push_back(backend.CreateMaterial(portalSampler));
+    TG::IMaterial* blueMaterial = materials.rbegin()->get();
+    materials.push_back(backend.CreateMaterial(portalSampler));
+    TG::IMaterial* orangeMaterial = materials.rbegin()->get();
     portalGun->SetPipeline(portalPipeline.GetPipeline());
-    portalGun->SetMaterials(std::move(blueMaterial), std::move(orangeMaterial));
+    portalGun->SetMaterials(blueMaterial, orangeMaterial);
     return portalGun;
+}
+
+std::unique_ptr<OnScreen> MazeSceneBuilder::CreateScreenQuad(TierGine::IContext& context)
+{
+    auto blueMaterial = materials.rbegin()->get();
+    auto quad = std::make_unique<OnScreen>(0, 0,2* 384, 2*216, blueMaterial, context);
+    TG::SimplePipeline portalPipeline(context, "./res/shaders/tex.vert.glsl",
+            "./res/shaders/tex.frag.glsl");
+    quad->SetPipeline(portalPipeline.GetPipeline(), portalPipeline.GetUniformVariable("portaledTexture"));
+    return quad;
+}
+
+std::unique_ptr<Map> MazeSceneBuilder::CreateMap(TierGine::IContext& context, const Grid* grid)
+{
+    TG::IMesh* mesh = context.CreateMesh();
+    TG::Tensor vertices(0, 3, nullptr);
+
+    std::unique_ptr<Map> mapObject;
+    int n = 42;
+    for(int i = 0; i < n; ++i) {
+        for(int j = 0; j < n; ++j) {
+            auto v = static_cast<const WalledEntry*>((*grid)[i][0][j].get())->GetMapData();
+            vertices = vertices.Add(v);
+        }
+    }
+    mesh->AddAtribute(0, vertices);
+    int size = 500;
+    mapObject.reset(new Map(BufferWidth-size, BufferHeight-size, size, size, mesh, context));
+    TG::SimplePipeline pipeline(context, "./res/shaders/mono.vert.glsl",
+            "./res/shaders/mono.frag.glsl");
+    mapObject->SetRenderingMode(TG::RM_FILL, TG::PRS_BOTH);
+    mapObject->SetPipeline(pipeline.GetPipeline(), TG::UniformVariable{});
+    return mapObject;
 }
 
 void MazeSceneBuilder::loadMaterials(TG::ITextureSampler* sampler, TG::IContext& context)

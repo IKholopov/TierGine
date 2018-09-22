@@ -23,18 +23,22 @@ namespace TierGine {
 class PhysicsBox : public IPhysicsObject {
 public:
     PhysicsBox(const std::initializer_list<float> initalPosition,
-               const std::initializer_list<float> initalMomentum, float boxSize):
+               const std::initializer_list<float> initalMomentum,
+               const std::initializer_list<float> initalDirection, float boxSize):
         box(glm::vec3(*initalPosition.begin(), *(initalPosition.begin()+1), *(initalPosition.begin()+2)) - glm::vec3(boxSize/2),
             glm::vec3(*initalPosition.begin(), *(initalPosition.begin()+1), *(initalPosition.begin()+2)) + glm::vec3(boxSize/2)),
         position(glm::vec3(*initalPosition.begin(), *(initalPosition.begin()+1), *(initalPosition.begin()+2))),
         momentum(glm::vec3(*initalMomentum.begin(), *(initalMomentum.begin()+1), *(initalMomentum.begin()+2))),
+        direction(glm::vec3(*initalDirection.begin(), *(initalDirection.begin()+1), *(initalDirection.begin()+2))),
         boxRadius(boxSize/2)
     {}
 
-    PhysicsBox(const glm::vec3& initalPosition, const glm::vec3& initalMomentum, float boxSize):
+    PhysicsBox(const glm::vec3& initalPosition, const glm::vec3& initalMomentum,
+               const glm::vec3& initalDirection, float boxSize):
         box(initalPosition - glm::vec3(boxSize/2), initalPosition + glm::vec3(boxSize/2)),
         position(initalPosition),
         momentum(initalMomentum),
+        direction(initalDirection),
         boxRadius(boxSize/2)
     {}
 
@@ -47,7 +51,7 @@ public:
     virtual const glm::vec3& GetCenter() override { return position; }
     virtual const glm::vec3& GetMomentum() override { return momentum; }
     virtual void ApplyWorldUpdate(ICollisionSolver* solver) override {
-        solver->Update(position, momentum);
+        solver->Update(position, momentum, direction);
         updateBox();
     }
 
@@ -55,6 +59,7 @@ private:
     AABox box;
     glm::vec3 position;
     glm::vec3 momentum;
+    glm::vec3 direction;
     float boxRadius;
 
     void updateBox() { box = std::move(AABox(position - glm::vec3(boxRadius), position + glm::vec3(boxRadius))); }

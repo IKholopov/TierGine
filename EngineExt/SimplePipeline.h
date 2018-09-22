@@ -26,8 +26,8 @@ namespace TierGine {
 
 class SimplePipeline : public IPipeline {
 public:
-    SimplePipeline(IContext& context, std::string vertexShaderPath,
-                   std::string fragmentShaderPath);
+    SimplePipeline(IContext& context, const std::string& vertexShaderPath,
+                   const std::string& fragmentShaderPath);
 
     IPipeline* GetPipeline() { return pipeline; }
 

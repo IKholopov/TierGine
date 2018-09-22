@@ -162,18 +162,75 @@ glm::vec2 WalledEntry::GetDirectionFrom(Byte wall, bool forward) const
 glm::vec3 WalledEntry::GetPositionFrom(unsigned char wall, bool forward) const
 {
     if(wall & LeftWall) {
-        return glm::vec3(GetPosition().x + 0.3f, GetPosition().y + 0.5f, GetPosition().z + (forward ? 0.6f : 0.4f)  );
+        return glm::vec3(GetPosition().x + 0.2f, GetPosition().y + 0.5f, GetPosition().z + (forward ? 0.65f : 0.35f)  );
     }
     if(wall & RightWall) {
-        return glm::vec3(GetPosition().x + 0.7f, GetPosition().y + 0.5f, GetPosition().z + (forward ? 0.6f : 0.4f)  );
+        return glm::vec3(GetPosition().x + 0.8f, GetPosition().y + 0.5f, GetPosition().z + (forward ? 0.65f : 0.35f)  );
     }
     if(wall & BackWall) {
-        return glm::vec3(GetPosition().x + (forward ? 0.65f : 0.35f), GetPosition().y + 0.5f, GetPosition().z + 0.3f  );
+        return glm::vec3(GetPosition().x + (forward ? 0.65f : 0.35f), GetPosition().y + 0.5f, GetPosition().z + 0.2f  );
     }
     if(wall & FrontWall) {
-        return glm::vec3(GetPosition().x + (forward ? 0.65f : 0.35f), GetPosition().y + 0.5f, GetPosition().z + 0.7f  );
+        return glm::vec3(GetPosition().x + (forward ? 0.65f : 0.35f), GetPosition().y + 0.5f, GetPosition().z + 0.8f  );
     }
     assert(false);
+}
+
+TierGine::Tensor WalledEntry::GetMapData() const
+{
+    TG::Tensor mesh = TG::CreateTensor(0, 3, std::initializer_list<float>());
+    if(directions & (FrontWall && BackWall)) {
+        mesh = mesh.Add(TG::CreateTensor(6, 3, {
+                                             GetPosition().x + 0.6f, GetPosition().z, -1.0f,
+                                             GetPosition().x + 0.6f, GetPosition().z + 1.0f, -1.0f,
+                                             GetPosition().x + 0.4f, GetPosition().z, -1.0f,
+                                             GetPosition().x + 0.4f, GetPosition().z, -1.0f,
+                                             GetPosition().x + 0.6f, GetPosition().z + 1.0f, -1.0f,
+                                             GetPosition().x + 0.4f, GetPosition().z + 1.0f, -1.0f,
+                                         }));
+    } else {
+        if(directions & FrontWall) {
+            mesh = mesh.Add(TG::CreateTensor(6, 3, {
+                                                 GetPosition().x + 0.6f, GetPosition().z + 0.4f, -1.0f,
+                                                 GetPosition().x + 0.6f, GetPosition().z + 1.0f, -1.0f,
+                                                 GetPosition().x + 0.4f, GetPosition().z + 0.4f, -1.0f,
+                                                 GetPosition().x + 0.4f, GetPosition().z + 0.4f, -1.0f,
+                                                 GetPosition().x + 0.6f, GetPosition().z + 1.0f, -1.0f,
+                                                 GetPosition().x + 0.4f, GetPosition().z + 1.0f, -1.0f,
+                                             }));
+        }
+        if(directions & BackWall) {
+            mesh = mesh.Add(TG::CreateTensor(6, 3, {
+                                                 GetPosition().x + 0.6f, GetPosition().z, -1.0f,
+                                                 GetPosition().x + 0.6f, GetPosition().z + 0.6f, -1.0f,
+                                                 GetPosition().x + 0.4f, GetPosition().z, -1.0f,
+                                                 GetPosition().x + 0.4f, GetPosition().z, -1.0f,
+                                                 GetPosition().x + 0.6f, GetPosition().z + 0.6f, -1.0f,
+                                                 GetPosition().x + 0.4f, GetPosition().z + 0.6f, -1.0f,
+                                             }));
+        }
+    }
+    if(directions & RightWall) {
+        mesh = mesh.Add(TG::CreateTensor(6, 3, {
+                                             GetPosition().x + 1.0f, GetPosition().z + 0.4f, -1.0f,
+                                             GetPosition().x + 1.0f, GetPosition().z + 0.6f, -1.0f,
+                                             GetPosition().x + 0.4f, GetPosition().z + 0.4f, -1.0f,
+                                             GetPosition().x + 0.4f, GetPosition().z + 0.4f, -1.0f,
+                                             GetPosition().x + 1.0f, GetPosition().z + 0.6f, -1.0f,
+                                             GetPosition().x + 0.4f, GetPosition().z + 0.6f, -1.0f,
+                                         }));
+    }
+    if(directions & LeftWall) {
+        mesh = mesh.Add(TG::CreateTensor(6, 3, {
+                                             GetPosition().x + 0.6f, GetPosition().z + 0.4f, -1.0f,
+                                             GetPosition().x + 0.6f, GetPosition().z + 0.6f, -1.0f,
+                                             GetPosition().x, GetPosition().z + 0.4f, -1.0f,
+                                             GetPosition().x, GetPosition().z + 0.4f, -1.0f,
+                                             GetPosition().x + 0.6f, GetPosition().z + 0.6f, -1.0f,
+                                             GetPosition().x, GetPosition().z + 0.6f, -1.0f,
+                                         }));
+    }
+    return mesh;
 }
 
 
@@ -295,7 +352,7 @@ TierGine::ICollisionSource* CollisionsIterator::GetNext()
 class ConstSolver : public TG::ICollisionSolver {
 public:
     ConstSolver(const glm::vec3& center, const glm::vec3& momentum):centerValue(center), momenutmValue(momentum) {}
-    virtual void Update(glm::vec3& center, glm::vec3& momentum) override { center = this->centerValue; momentum = momenutmValue; }
+    virtual void Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction) override { center = this->centerValue; momentum = momenutmValue; }
 
 private:
     glm::vec3 centerValue;

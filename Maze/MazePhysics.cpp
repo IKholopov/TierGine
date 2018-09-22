@@ -15,11 +15,44 @@
    ==============================================================================
 */
 #include <MazePhysics.h>
+#include <MazePortalGun.h>
 
 namespace TG = TierGine;
 
+namespace {
+
+class ConcatIterator: public TG::PhysicsWorld::ICollisionsIterator {
+public:
+    ConcatIterator(std::unique_ptr<TG::PhysicsWorld::ICollisionsIterator>&& first, std::unique_ptr<TG::PhysicsWorld::ICollisionsIterator>&& second):
+        active(first.get()),
+        first(std::move(first)),
+        second(std::move(second))
+    {
+    }
+
+    // ICollisionsIterator interface
+    virtual TierGine::ICollisionSource* GetNext() override {
+        auto source = active->GetNext();
+        if(source == nullptr && active != second.get()) {
+            active = second.get();
+            source = active->GetNext();
+        }
+        return source;
+    }
+
+private:
+    TG::PhysicsWorld::ICollisionsIterator* active;
+    std::unique_ptr<TG::PhysicsWorld::ICollisionsIterator> first;
+    std::unique_ptr<TG::PhysicsWorld::ICollisionsIterator> second;
+};
+
+}
+
 std::unique_ptr<TierGine::PhysicsWorld::ICollisionsIterator> MazePhysicsEngine::GetCollisions(TierGine::IPhysicsObject* obj)
 {
+    if(gun != nullptr) {
+        return std::make_unique<ConcatIterator>(std::move(grid->GetCollisions(obj)), std::move(gun->GetCollisions(obj)));
+    }
     return grid->GetCollisions(obj);
 }
 

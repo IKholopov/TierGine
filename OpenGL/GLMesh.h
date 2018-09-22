@@ -50,6 +50,7 @@ public:
     virtual const IContext& GetContext() const override { return context; }
 
     virtual void AddAtribute(int id, const Tensor& value) override;
+    virtual const Tensor GetAtribute(int id) const override;
     virtual void Bind() const override;
 
 private:
@@ -58,6 +59,7 @@ private:
         Buffer(const Tensor& data);
         ~Buffer();
 
+        const Tensor GetData() const { return data; }
         void SetData(const Tensor& data);
         void Bind();
         void Unbind();

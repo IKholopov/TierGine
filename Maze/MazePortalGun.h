@@ -24,11 +24,21 @@
 
 class PortalCamera: public TG::FreeCamera {
 public:
+    PortalCamera(): overridenPosition(OriginalPosition()),
+        overridenProjection(OriginalProjection())
+    {}
+
     virtual const glm::mat4x4 GetPositionTransformation() const override;
     virtual const TG::CameraData GetCameraProjections() const override;
 
-    void SetOverridenPosition(const glm::mat4x4& position) { overridenPosition = position; }
-    void SetOverridenProjection(const glm::mat4x4& projection) { overridenProjection = projection; }
+    void SetOverridenPosition(const glm::mat4x4& position) {
+        overridenPosition = position;
+        auto pos = glm::inverse(position);
+        SetPosition(glm::vec3(pos[3][0], pos[3][1], pos[3][2]));
+    }
+    void SetOverridenProjection(const glm::mat4x4& projection) {
+        overridenProjection = projection;
+    }
 
     glm::mat4x4 OriginalPosition() const { return FreeCamera::GetPositionTransformation(); }
     glm::mat4x4 OriginalProjection() const { return FreeCamera::GetCameraProjections().Projection; }
@@ -50,21 +60,29 @@ public:
 
     void PerformShot(TG::ICamera& camera, float distance, Color color);
     void SetPipeline(TG::IPipeline* portalPipeline);
-    void SetMaterials(std::unique_ptr<TG::IMaterial>&& bluePortalMaterial,
-                     std::unique_ptr<TG::IMaterial>&& orangePortalMaterial);
+    void SetMaterials(TierGine::IMaterial* bluePortalMaterial,
+                     TierGine::IMaterial* orangePortalMaterial);
 
     void RenderPortals(TG::IScene* scene, TG::ICamera* activeCamera);
+    void RenderPortalsRecursive(TG::IScene* scene, TG::ICamera* activeCamera, int level = 0);
     glm::mat4x4 ClipProjectionMatrix(const glm::mat4x4& projection, const glm::vec4& plane);
+
+    std::unique_ptr<TierGine::PhysicsWorld::ICollisionsIterator> GetCollisions(TG::IPhysicsObject* obj) const;
 
 private:
     DebugCube* blueCube;
     PortalCamera blueCamera;
     PortalCamera orangeCamera;
-    std::unique_ptr<TG::IMaterial> blueMaterial;
-    std::unique_ptr<TG::IMaterial> orangeMaterial;
+    TG::IMaterial* blueMaterial;
+    TG::IMaterial* orangeMaterial;
     MazePortal* blue;
     MazePortal* orange;
     TG::IFramebuffer* blueBuffer;
     TG::IFramebuffer* orangeBuffer;
     MazePhysicsEngine* engine;
+    int width;
+    int height;
+    TG::UniformVariable left;
+    TG::UniformVariable right;
+    const int maxLevel = 3;
 };

@@ -59,7 +59,7 @@ private:
     void onLeft(int action);
 
     // ICollisionSolver interface for physicsObject
-    virtual void Update(glm::vec3& center, glm::vec3& momentum) override;
+    virtual void Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction) override;
 };
 
 }

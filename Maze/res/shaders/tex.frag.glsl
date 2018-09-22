@@ -14,25 +14,13 @@
    limitations under the License.
    ==============================================================================
 */
+#version 400
 
-#include <SimplePipeline.h>
+uniform sampler2D portaledTexture;
 
-#include <assert.h>
+in vec2 texCoords;
+out vec4 frag_color;
 
-namespace TierGine {
-
-SimplePipeline::SimplePipeline(IContext& context, const std::string& vertexShaderPath,
-                               const std::string& fragmentShaderPath) :
-    pipeline(context.CreatePipeline())
-{
-    assert(pipeline != 0);
-    auto vertexShader = GetContext().CreateShader(IShader::T_Vertex);
-    vertexShader->LoadFromPath(vertexShaderPath);
-    auto fragmentShader = GetContext().CreateShader(IShader::T_Fragment);
-    fragmentShader->LoadFromPath(fragmentShaderPath);
-    pipeline->BindShader(vertexShader);
-    pipeline->BindShader(fragmentShader);
-    pipeline->Build();
-}
-
+void main() {
+     frag_color = vec4(texture(portaledTexture, vec2((texCoords[0] - 0.5) / 2 + 0.5f  , (texCoords[1] - 0.5) / 2 + 0.5f )).rgb, 1.0);
 }

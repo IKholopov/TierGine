@@ -34,7 +34,7 @@ public:
             position(finalPos)
         {}
         // ICollisionSolver interface
-        virtual void Update(glm::vec3& center, glm::vec3& momentum) override;
+        virtual void Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction) override;
 
     private:
         glm::vec3 moment;

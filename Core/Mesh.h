@@ -31,6 +31,7 @@ interface IMesh : public ILoadableResource {
     virtual const IContext& GetContext() const = 0;
 
     virtual void AddAtribute(int id, const Tensor& value) = 0;
+    virtual const Tensor GetAtribute(int id) const = 0;
     virtual void Bind() const = 0;
 };
 

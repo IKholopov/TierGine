@@ -15,24 +15,13 @@
    ==============================================================================
 */
 
-#include <SimplePipeline.h>
+#version 400
 
-#include <assert.h>
+layout(location = 0) in vec3 vertexPosition;
 
-namespace TierGine {
+out vec2 texCoords;
 
-SimplePipeline::SimplePipeline(IContext& context, const std::string& vertexShaderPath,
-                               const std::string& fragmentShaderPath) :
-    pipeline(context.CreatePipeline())
-{
-    assert(pipeline != 0);
-    auto vertexShader = GetContext().CreateShader(IShader::T_Vertex);
-    vertexShader->LoadFromPath(vertexShaderPath);
-    auto fragmentShader = GetContext().CreateShader(IShader::T_Fragment);
-    fragmentShader->LoadFromPath(fragmentShaderPath);
-    pipeline->BindShader(vertexShader);
-    pipeline->BindShader(fragmentShader);
-    pipeline->Build();
-}
-
+void main() {
+    texCoords = (vertexPosition.xy + 1.0f) * 0.5f;
+    gl_Position = vec4(vertexPosition, 1.0f);
 }

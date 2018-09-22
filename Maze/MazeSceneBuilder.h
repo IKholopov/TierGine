@@ -22,6 +22,7 @@
 #include <MazePortalGun.h>
 #include <MazePhysics.h>
 #include <Backend.h>
+#include <OnScreen.h>
 #include <fstream>
 #include <unordered_map>
 
@@ -43,6 +44,8 @@ public:
                             TierGine::IPipeline& defaultPipeline);
     MazePhysicsEngine* CreatePhysicsEngine();
     std::unique_ptr<MazePortalGun> CreatePortalGun(TG::IContext& context, MazePhysicsEngine*engine, TG::IScene* scene);
+    std::unique_ptr<OnScreen> CreateScreenQuad(TG::IContext& context);
+    std::unique_ptr<Map> CreateMap(TG::IContext& context, const Grid* grid);
 
 private:
     std::vector<std::vector<std::string>> map;

@@ -31,12 +31,15 @@ struct LightInfo
 };
 uniform LightInfo light[2];
 uniform vec3 portalColor;
+uniform vec4 left;
+uniform vec4 right;
 
-in mat3 TBN;
 in vec4 lightPosCamSpace[2];
 in vec4 lightSourceDirCamSpace[2];
 in vec4 posCamSpace;
 in vec2 texCoord;
+in vec4 renderedCoord;
+in float w;
 
 out vec4 fragColor;
 
@@ -48,6 +51,7 @@ float radius() {
 
 void main()
 {
+    vec2 screenCoord = renderedCoord.xy / renderedCoord.w;
     vec3 color = vec3(0.0f);
     vec3 diffuseColor = portalColor;
     float alpha = 0.0f;
@@ -55,10 +59,20 @@ void main()
     {
         alpha = 1.0f;
     }
+    //float x_length =
     if( radius() > 0.018f ) {
         diffuseColor = portalColor;
     } else {
-        diffuseColor = texture(portaledTexture, texCoord).rgb;
+        diffuseColor = texture(portaledTexture, screenCoord).rgb;
     }
-    fragColor = vec4(diffuseColor, alpha);//vec4(portalColor, alpha);
+    fragColor = vec4(diffuseColor, alpha);
+/*
+    if( radius() > 10.0f )
+    {
+        fragColor = vec4(diffuseColor, alpha);
+    }
+    else {
+        fragColor = vec4(w, 0.0f, 0.0f, 1.0f);
+    }
+*/
 }

@@ -9,6 +9,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/" 
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "${DEPENDENCIES_ROOT}/include/imgui ${DEPENDENCIES_ROOT}/include")
 set (CMAKE_CXX_STANDARD 17)
 
+message(${DEPENDENCIES_ROOT})
+
 if(MSVC)
   # Force to always compile with W4
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -34,6 +36,7 @@ find_package(imgui)
 find_package(Threads REQUIRED)
 
 add_subdirectory(Core)
+
 add_subdirectory(GLFW)
 add_subdirectory(EngineExt)
 add_subdirectory(Formats)

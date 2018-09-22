@@ -49,3 +49,6 @@ public:
 private:
     T& bindable;
 };
+
+template<typename T, typename U>
+T to(const U& u) { return static_cast<T>(u); }

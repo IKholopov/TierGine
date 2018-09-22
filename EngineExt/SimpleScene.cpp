@@ -45,9 +45,7 @@ void SimpleScene::Add(std::unique_ptr<ISceneObject>& object)
 void SimpleScene::Render()
 {
     pipelineInitialized = false;
-    if(activePipeline == nullptr) {
-        activatePipeline(&defaultPipeline);
-    }
+    activatePipeline(&defaultPipeline);
     for(auto obj = objects.begin(); obj != objects.end(); ++obj) {
         IPipeline* objPipeline = (*obj)->GetPipeline();
         if(objPipeline != nullptr && objPipeline != activePipeline) {
@@ -73,6 +71,19 @@ void SimpleScene::Render()
 void SimpleScene::Update()
 {
 
+}
+
+void SimpleScene::RenderBasicDrawables()
+{
+    for(auto basic: basicDrawables) {
+        IPipeline* objPipeline = basic->GetPipeline();
+        if(objPipeline != nullptr && objPipeline != activePipeline) {
+            activePipeline = objPipeline;
+            activePipeline->Activate();
+            pipelineInitialized = false;
+        }
+        basic->Draw();
+    }
 }
 
 void SimpleScene::assertPipelineUniforms(const std::unordered_map<std::string, UniformVariable>& variables)

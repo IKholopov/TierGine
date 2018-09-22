@@ -46,8 +46,14 @@ public:
     virtual void SetCamera(const ICamera* camera) override
         { this->camera = camera; }
 
+    void AddBasicDrawable(IDrawable* drawable) { basicDrawables.push_back(drawable); }
+    void RenderBasicDrawables();
+
+    IPipeline* GetActivePipeline() const { return activePipeline; }
+
 private:
     std::vector<std::unique_ptr<ISceneObject>> objects;
+    std::vector<IDrawable*> basicDrawables;
     LightningScheme lights;
     MaterialInfo defaultMaterial;
 
