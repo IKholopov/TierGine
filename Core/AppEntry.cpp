@@ -59,7 +59,7 @@ int main(int argc, const char** argv)
     TierGine::CurrentApp app;
     try {
         return app.RunApp();
-    } catch(TierGine::EngineException exception) {
+    } catch(TierGine::EngineException& exception) {
         TierGine::Log::Error() << exception.what() << std::endl;
         return 1;
     }

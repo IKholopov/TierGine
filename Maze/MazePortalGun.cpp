@@ -158,17 +158,7 @@ void MazePortalGun::RenderPortals(TG::IScene* scene, TG::ICamera* activeCamera)
         cosR = mat4[1][1];
     }
     glm::vec3 rotCalc(atan2(sinR, cosR),M_PI_2- atan2(sinP, cosP), 0.0f);
-    TG::Log::Info() << "--------" << std::endl;
-    glm::vec2 rotation = activeCamera->GetDirection();
-    /*
-    TG::Log::Info() << std::to_string(rotation[0]) << " " << std::to_string(rotation[1]) << std::endl;
-    TG::Log::Info() << std::to_string(rotCalc[0]) << " " << std::to_string(rotCalc[1]) << " " << std::to_string(rotCalc[2]) << std::endl;
-    */
-    TG::Log::Info() << std::to_string(sin(rotation[0] + M_PI_2)) << std::endl;
-    TG::Log::Info() << std::to_string(sinP) << std::endl;
-    TG::Log::Info() << std::to_string(sin(rotation[1] + M_PI_2)) << std::endl;
-    TG::Log::Info() << std::to_string(-sinR) << std::endl;
-    TG::Log::Info() << "--------" << std::endl;
+
     {
         glm::mat4x4 virtualCamView = activeCamera->GetCameraProjections().View * blue->GetViewMatrix(true) *
                 glm::inverse(orange->GetViewMatrix(false));

@@ -34,6 +34,7 @@ find_package(soil)
 find_package(imgui)
 
 find_package(Threads REQUIRED)
+add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
 
 add_subdirectory(Core)
 
