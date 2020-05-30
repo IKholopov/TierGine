@@ -22,7 +22,9 @@
 namespace TierGine {
 
 interface IMeshLoader {
-  virtual void LoadInto(IMesh& mesh) const = 0;
+    virtual void LoadInto(IMesh& mesh) const = 0;
+
+    virtual ~IMeshLoader() = default;
 };
 
 namespace Formats {

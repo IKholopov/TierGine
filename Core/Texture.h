@@ -52,6 +52,7 @@ interface ITextureSampler {
         I_Invalid
     };
 
+    virtual IContext& GetContext() const = 0;
     virtual void SetTileMode(const TileMode& mode) = 0;
     virtual void SetInterpolation(const Interpolation& interpolation) = 0;
     virtual UniformVariable GetUniform(IPipeline* pipeline) = 0;

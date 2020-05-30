@@ -26,18 +26,23 @@ interface IPhysicsObject;
 
 interface ICollisionSolver {
     virtual void Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction) = 0;
+
+    virtual ~ICollisionSolver() {}
 };
 
 interface ICollisionSource {
-    virtual ~ICollisionSource() {}
     virtual const AABox& GetAABox() const = 0;
     virtual std::unique_ptr<ICollisionSolver> GetSolverFor(IPhysicsObject& object) = 0;
+
+    virtual ~ICollisionSource() {}
 };
 
 interface IPhysicsObject : public ICollisionSource {
     virtual const glm::vec3& GetCenter() = 0;
     virtual const glm::vec3& GetMomentum() = 0;
     virtual void ApplyWorldUpdate(ICollisionSolver* solver) = 0;
+
+    virtual ~IPhysicsObject() {}
 };
 
 }

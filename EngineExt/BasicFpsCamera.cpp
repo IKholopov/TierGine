@@ -31,25 +31,25 @@ BasicFpsCamera::BasicFpsCamera():
 
 void BasicFpsCamera::BindToInputProvider(InputProvider& provider)
 {
-    listeners.push_back(std::move(provider.AddMouseListener([this](int x, int y){
+    listeners.push_back(provider.AddMouseListener([this](int x, int y){
         this->onMouse(x, y);
-    })));
-    listeners.push_back(std::move(provider.AddKeyListener(GLFW_KEY_W,
+    }));
+    listeners.push_back(provider.AddKeyListener(GLFW_KEY_W,
                                                           [this](int action) {
         this->onForward(action);
-    })));
-    listeners.push_back(std::move(provider.AddKeyListener(GLFW_KEY_S,
+    }));
+    listeners.push_back(provider.AddKeyListener(GLFW_KEY_S,
                                                           [this](int action) {
         this->onBackward(action);
-    })));
-    listeners.push_back(std::move(provider.AddKeyListener(GLFW_KEY_D,
+    }));
+    listeners.push_back(provider.AddKeyListener(GLFW_KEY_D,
                                                           [this](int action) {
         this->onRight(action);
-    })));
-    listeners.push_back(std::move(provider.AddKeyListener(GLFW_KEY_A,
+    }));
+    listeners.push_back(provider.AddKeyListener(GLFW_KEY_A,
                                                           [this](int action) {
         this->onLeft(action);
-    })));
+    }));
 }
 
 void BasicFpsCamera::UnbindFromInput()
@@ -87,7 +87,7 @@ void BasicFpsCamera::onMouse(int x, int y)
     cameraView.SetDirection(direction);
 }
 
-void BasicFpsCamera::onForward(int action)
+void BasicFpsCamera::onForward(int)
 {
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
@@ -99,7 +99,7 @@ void BasicFpsCamera::onForward(int action)
     }
 }
 
-void BasicFpsCamera::onBackward(int action)
+void BasicFpsCamera::onBackward(int)
 {
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
@@ -111,7 +111,7 @@ void BasicFpsCamera::onBackward(int action)
     }
 }
 
-void BasicFpsCamera::onRight(int action)
+void BasicFpsCamera::onRight(int)
 {
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];
@@ -123,7 +123,7 @@ void BasicFpsCamera::onRight(int action)
     }
 }
 
-void BasicFpsCamera::onLeft(int action)
+void BasicFpsCamera::onLeft(int)
 {
     glm::vec2 direction = cameraView.GetDirection();
     float& phi = direction[0];

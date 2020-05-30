@@ -51,27 +51,27 @@ private:
 
 class MazeApp : public TG::GLBaseApp {
 public:
-    MazeApp() : GLBaseApp(TG::WindowGLFW::Config(1920, 1080, "Maze", false)), activeCamera(&freeCamera.GetCamera()), timeout(0.1f), lastHit(0.0f), camDistance(0.0f)
+    MazeApp() : GLBaseApp(TG::WindowGLFW::Config(1920, 1080, "Maze", false)), activeCamera(&freeCamera.GetCamera()), camDistance(0.0f)
     {
         Initializers().push_back(std::make_unique<TierGine::GLDebugInitializer>());
-        listeners.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_Q, [this](int action) {
+        listeners.push_back(GetInputProvider().AddKeyListener(GLFW_KEY_Q, [this](int) {
             this->switchCamera();
-        }, 0.5f)));
-        auto bluePortalOpen = [this](int action) {
+        }, 0.5f));
+        auto bluePortalOpen = [this](int) {
             std::lock_guard<std::mutex> gurad(critical);
             portalGun->PerformShot(mazeCamera.GetCamera(), camDistance, MazePortalGun::C_BLUE);
         };
 
-        listeners.push_back(std::move(GetInputProvider().AddMouseButtonListener(GLFW_MOUSE_BUTTON_LEFT, bluePortalOpen, 0.5f)));
-        listeners.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_F, bluePortalOpen, 0.5f)));
+        listeners.push_back(GetInputProvider().AddMouseButtonListener(GLFW_MOUSE_BUTTON_LEFT, bluePortalOpen, 0.5f));
+        listeners.push_back(GetInputProvider().AddKeyListener(GLFW_KEY_F, bluePortalOpen, 0.5f));
 
-        auto orangePortalOpen = [this](int action) {
+        auto orangePortalOpen = [this](int) {
             std::lock_guard<std::mutex> gurad(critical);
             portalGun->PerformShot(mazeCamera.GetCamera(), camDistance, MazePortalGun::C_ORANGE);
         };
 
-        listeners.push_back(std::move(GetInputProvider().AddMouseButtonListener(GLFW_MOUSE_BUTTON_RIGHT, orangePortalOpen, 0.5f)));
-        listeners.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_E, orangePortalOpen, 0.5f)));
+        listeners.push_back(GetInputProvider().AddMouseButtonListener(GLFW_MOUSE_BUTTON_RIGHT, orangePortalOpen, 0.5f));
+        listeners.push_back(GetInputProvider().AddKeyListener(GLFW_KEY_E, orangePortalOpen, 0.5f));
 
     }
 protected:
@@ -98,8 +98,6 @@ private:
     TG::ICamera* activeCamera;
     DebugCube* camCube;
     TG::Listeners listeners;
-    float timeout;
-    float lastHit;
     float camDistance;
 
     void initializeBuffers();
@@ -172,7 +170,7 @@ void MazeApp::initializeBuffers()
     yImpact->OnBind(mazeCamera.GetPhysics());
     physics->AddSecondOrderImpact(yImpact.get());
     physics->AddToWorld(mazeCamera.GetPhysics());
-    portalGun = std::move(builder.CreatePortalGun(*GetContext(), physics.get(), scene.get()));
+    portalGun = builder.CreatePortalGun(*GetContext(), physics.get(), scene.get());
     measureMazeCamDistance();
     physics->SetPortalGun(portalGun.get());
     std::unique_ptr<TG::ISceneObject> cube = std::make_unique<DebugCube>(*GetContext());
@@ -181,9 +179,9 @@ void MazeApp::initializeBuffers()
     camCube = static_cast<DebugCube*>(cube.get());
     scene->Add(cube);
     portalGun->PerformShot(mazeCamera.GetCamera(), camDistance, MazePortalGun::C_ORANGE);
-    onScreen = std::move(builder.CreateScreenQuad(*GetContext()));
+    onScreen = builder.CreateScreenQuad(*GetContext());
     //scene->AddBasicDrawable(onScreen.get());
-    map = std::move(builder.CreateMap(*GetContext(), physics->GetGrid()));
+    map = builder.CreateMap(*GetContext(), physics->GetGrid());
     scene->AddBasicDrawable(map.get());
 }
 

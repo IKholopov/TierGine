@@ -51,7 +51,7 @@ private:
 std::unique_ptr<TierGine::PhysicsWorld::ICollisionsIterator> MazePhysicsEngine::GetCollisions(TierGine::IPhysicsObject* obj)
 {
     if(gun != nullptr) {
-        return std::make_unique<ConcatIterator>(std::move(grid->GetCollisions(obj)), std::move(gun->GetCollisions(obj)));
+        return std::make_unique<ConcatIterator>(grid->GetCollisions(obj), gun->GetCollisions(obj));
     }
     return grid->GetCollisions(obj);
 }

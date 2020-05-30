@@ -33,8 +33,8 @@ namespace TierGine {
 AABox::AABox(const glm::vec3& v1, const glm::vec3& v2)
 {
     float eps = 1e-5f;
-    if(abs(v1.x - v2.x) < eps && abs(v1.y - v2.y) < eps &&
-            abs(v1.z - v2.z) < eps)
+    if(std::abs(v1.x - v2.x) < eps && std::abs(v1.y - v2.y) < eps &&
+            std::abs(v1.z - v2.z) < eps)
     {
         assert(false);
     }

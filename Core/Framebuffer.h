@@ -23,7 +23,10 @@ namespace TierGine {
 interface IFramebuffer {
     virtual void Bind() = 0;
     virtual void Unbind() = 0;
-    virtual ITexture* GetTexture() = 0;
+    virtual ITexture* GetTexture() const = 0;
+    virtual IContext& GetContext() const = 0;
+
+    virtual ~IFramebuffer() {}
 };
 
 }

@@ -62,7 +62,7 @@ private:
     glm::vec3 direction;
     float boxRadius;
 
-    void updateBox() { box = std::move(AABox(position - glm::vec3(boxRadius), position + glm::vec3(boxRadius))); }
+    void updateBox() { box = AABox(position - glm::vec3(boxRadius), position + glm::vec3(boxRadius)); }
 };
 
 }

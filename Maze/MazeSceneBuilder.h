@@ -52,7 +52,6 @@ private:
     std::unique_ptr<Grid> grid;
     std::vector<std::vector<bool>> collision;
 
-    int width, height;
     std::vector<std::unique_ptr<TG::IMaterial>>& materials;
     const std::vector<MaterialFiles>& materialFiles;
     TierGine::IBackend& backend;

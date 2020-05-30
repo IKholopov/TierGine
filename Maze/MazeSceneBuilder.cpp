@@ -26,8 +26,11 @@
 #include <TBN.h>
 #include <glm/glm.hpp>
 
-static int BufferWidth = 1920;//1024;
-static int BufferHeight = 1080;//2560;
+#include <iostream>
+
+static const int BufferWidth = 1920;//1024;
+static const int BufferHeight = 1080;//2560;
+static const int GridSize = 24;
 
 namespace {
 
@@ -146,8 +149,6 @@ void ProcessGrid(Grid& grid) {
 MazeSceneBuilder::MazeSceneBuilder(std::vector<std::unique_ptr<TG::IMaterial>>& materials,
                                    const std::vector<MaterialFiles>& materialFiles,
                                    TierGine::IBackend& backend) :
-    width(0),
-    height(0),
     materials(materials),
     materialFiles(materialFiles),
     backend(backend),
@@ -170,7 +171,7 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
     }
     std::unique_ptr<TG::SimpleScene> scene(new TG::SimpleScene(camera, defaultPipeline));
     {
-        int n = 42;
+        int n = GridSize;
         grid.reset(new Grid(n, 1, n));
         for(int i = 0; i < n; ++i) {
             for(int j = 0; j < n; ++j) {
@@ -178,6 +179,9 @@ TierGine::SimpleScene* MazeSceneBuilder::CreateSceneAndGrid(TG::IContext& contex
             }
         }
         ProcessGrid(*grid.get());
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        std::cout << ms << std::endl;
+        srand(ms);
         for(int i = 0; i < n; ++i) {
             for(int j = 0; j < n; ++j) {
                 auto [v, norm, uv] = (*grid)[i][0][j]->GetMesh();
@@ -307,7 +311,7 @@ std::unique_ptr<Map> MazeSceneBuilder::CreateMap(TierGine::IContext& context, co
     TG::Tensor vertices(0, 3, nullptr);
 
     std::unique_ptr<Map> mapObject;
-    int n = 42;
+    int n = GridSize;
     for(int i = 0; i < n; ++i) {
         for(int j = 0; j < n; ++j) {
             auto v = static_cast<const WalledEntry*>((*grid)[i][0][j].get())->GetMapData();
@@ -326,7 +330,7 @@ std::unique_ptr<Map> MazeSceneBuilder::CreateMap(TierGine::IContext& context, co
 
 void MazeSceneBuilder::loadMaterials(TG::ITextureSampler* sampler, TG::IContext& context)
 {
-    materials.push_back(std::move(backend.CreateMaterial(sampler)));
+    materials.push_back(backend.CreateMaterial(sampler));
     floorMaterial = materials[0].get();
     auto floorTexture = context.CreateTexture();
     floorTexture->LoadFromPath("res/textures/floor.jpg");
@@ -340,7 +344,7 @@ void MazeSceneBuilder::loadMaterials(TG::ITextureSampler* sampler, TG::IContext&
     floorMaterial->GetMaterialInfo().Kd = glm::vec3(0.4f, 0.4f, 0.4f);
     floorMaterial->GetMaterialInfo().Ks = glm::vec3(0.4f, 0.4f, 0.4f);
     floorMaterial->GetMaterialInfo().shininess = 10.0f;
-    materials.push_back(std::move(backend.CreateMaterial(sampler)));
+    materials.push_back(backend.CreateMaterial(sampler));
     ceilingMaterial = materials[1].get();
     auto ceilTexture = context.CreateTexture();
     ceilTexture->LoadFromPath("res/textures/ceil.jpg");
@@ -364,7 +368,7 @@ void MazeSceneBuilder::loadMaterial(TierGine::ITextureSampler* sampler, TierGine
                                     const MazeSceneBuilder::MaterialFiles& material)
 {
 
-    materials.push_back(std::move(backend.CreateMaterial(sampler)));
+    materials.push_back(backend.CreateMaterial(sampler));
     TG::IMaterial* wallMaterial = materials.rbegin()->get();
     TG::ITexture* wallTexture;
     auto found = textures.find(material.TextureName);

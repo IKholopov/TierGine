@@ -22,6 +22,8 @@ namespace TierGine {
 
 interface ITimeProvider {
     virtual double GetTime() = 0;
+
+    virtual ~ITimeProvider() {}
 };
 
 namespace Time {

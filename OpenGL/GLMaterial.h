@@ -27,6 +27,7 @@ public:
     GLMaterial(ITextureSampler* sampler);
 
     // ITextureSampler interface
+    IContext& GetContext() const override { return sampler->GetContext(); }
     virtual void SetTileMode(const TileMode& mode) override { sampler->SetTileMode(mode); }
     virtual void SetInterpolation(const Interpolation& interpolation) override { sampler->SetInterpolation(interpolation); }
     virtual UniformVariable GetUniform(IPipeline* pipeline) override { return sampler->GetUniform(pipeline); }

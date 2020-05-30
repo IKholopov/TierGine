@@ -38,16 +38,14 @@ MazePortalGun::MazePortalGun(TG::IContext& context, int width, int height,
     orange(nullptr),
     blueBuffer(context.CreateFramebuffer(width, height)),
     orangeBuffer(context.CreateFramebuffer(width, height)),
-    engine(engine),
-    width(width),
-    height(height)
+    engine(engine)
 {
     /*
     blueCamera.SetAspectRatio(16.0f/9.0f);
     blueCamera.SetFOV(120.0f);
     */
     blueCamera.SetOverridenProjection(blueCamera.OriginalProjection());
-    auto bluePortal = std::make_unique<MazePortal>(*context.CreateMesh(), &blueCamera, glm::vec3(0.2f, 0.3f, 0.9f));
+    auto bluePortal = std::make_unique<MazePortal>(*context.CreateMesh(), glm::vec3(0.2f, 0.3f, 0.9f));
     blue = bluePortal.get();
     std::unique_ptr<TG::ISceneObject> blueModel = std::move(bluePortal);
     scene->Add(blueModel);
@@ -57,7 +55,7 @@ MazePortalGun::MazePortalGun(TG::IContext& context, int width, int height,
     orangeCamera.SetFOV(120.0f);
     */
     orangeCamera.SetOverridenProjection(orangeCamera.OriginalProjection());
-    auto orangePortal = std::make_unique<MazePortal>(*context.CreateMesh(), &orangeCamera, glm::vec3(0.9f, 0.3f, 0.2f));
+    auto orangePortal = std::make_unique<MazePortal>(*context.CreateMesh(), glm::vec3(0.9f, 0.3f, 0.2f));
     orange = orangePortal.get();
     std::unique_ptr<TG::ISceneObject> orangeModel = std::move(orangePortal);
     scene->Add(orangeModel);
@@ -101,17 +99,9 @@ void MazePortalGun::PerformShot(TierGine::ICamera& camera, float distance, Color
         switch (color) {
         case C_BLUE:
             blue->SetMoveTo(info.entry, info.wall, info.forward);
-            /*
-            orangeCamera.SetPosition(info.entry->GetPositionFrom(info.wall, info.forward));
-            orangeCamera.SetDirection(info.entry->GetDirectionFrom(info.wall, info.forward));
-            */
             break;
         case C_ORANGE:
             orange->SetMoveTo(info.entry, info.wall, info.forward);
-            /*
-            blueCamera.SetPosition(info.entry->GetPositionFrom(info.wall, info.forward));
-            blueCamera.SetDirection(info.entry->GetDirectionFrom(info.wall, info.forward));
-            */
             break;
         default:
             assert(false);
@@ -150,7 +140,7 @@ void MazePortalGun::RenderPortals(TG::IScene* scene, TG::ICamera* activeCamera)
     float sinP, cosP, sinR, cosR;
     sinP = -mat4[2][0];
     cosP = sqrt(1-sinP*sinP);
-    if(abs(cosP) > 0.000001f) {
+    if(std::abs(cosP) > 0.000001f) {
         sinR = mat4[2][1] / cosP;
         cosR = mat4[2][2] / cosP;
     } else {
@@ -166,7 +156,6 @@ void MazePortalGun::RenderPortals(TG::IScene* scene, TG::ICamera* activeCamera)
 
         float distance = glm::length(glm::dot(activeCamera->GetPosition() - blue->GetPosition(), blue->GetDirection()));
         blueCamera.SetOverridenProjection(ClipProjectionMatrix( blueCamera.OriginalProjection(), orange->GetPlane(distance, virtualCamView)));
-        blue->GetUVs(activeCamera->GetCameraProjections());
 
         Binder blueBinder(*blueBuffer);
         scene->SetCamera(&blueCamera);

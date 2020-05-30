@@ -58,6 +58,8 @@ public:
     GridEntry(const GridEntry& other): x(other.x), y(other.y), z(other.z) {}
     GridEntry(GridEntry&& other): x(other.x), y(other.y), z(other.z) {}
 
+    virtual ~GridEntry() {}
+
     glm::vec3 GetPosition() const { return glm::vec3(x, y, z); }
     virtual void GetCollisionSources(std::vector<TG::ICollisionSource*>& sources) = 0;
 

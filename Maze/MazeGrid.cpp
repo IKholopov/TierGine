@@ -157,6 +157,7 @@ glm::vec2 WalledEntry::GetDirectionFrom(Byte wall, bool forward) const
         return glm::vec2(M_PI_2, forward ? -M_PI_2 : M_PI_2);
     }
     assert(false);
+    return glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 glm::vec3 WalledEntry::GetPositionFrom(unsigned char wall, bool forward) const
@@ -174,12 +175,13 @@ glm::vec3 WalledEntry::GetPositionFrom(unsigned char wall, bool forward) const
         return glm::vec3(GetPosition().x + (forward ? 0.65f : 0.35f), GetPosition().y + 0.5f, GetPosition().z + 0.8f  );
     }
     assert(false);
+    return glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 TierGine::Tensor WalledEntry::GetMapData() const
 {
     TG::Tensor mesh = TG::CreateTensor(0, 3, std::initializer_list<float>());
-    if(directions & (FrontWall && BackWall)) {
+    if(directions & (FrontWall & BackWall)) {
         mesh = mesh.Add(TG::CreateTensor(6, 3, {
                                              GetPosition().x + 0.6f, GetPosition().z, -1.0f,
                                              GetPosition().x + 0.6f, GetPosition().z + 1.0f, -1.0f,
@@ -352,7 +354,7 @@ TierGine::ICollisionSource* CollisionsIterator::GetNext()
 class ConstSolver : public TG::ICollisionSolver {
 public:
     ConstSolver(const glm::vec3& center, const glm::vec3& momentum):centerValue(center), momenutmValue(momentum) {}
-    virtual void Update(glm::vec3& center, glm::vec3& momentum, glm::vec3& direction) override { center = this->centerValue; momentum = momenutmValue; }
+    virtual void Update(glm::vec3& center, glm::vec3& momentum, glm::vec3&) override { center = this->centerValue; momentum = momenutmValue; }
 
 private:
     glm::vec3 centerValue;
@@ -405,12 +407,12 @@ int FixedBox::getClosestPlaneIndex(const glm::vec3& v)
     const glm::vec3& lower = GetAABox().Lower();
     const glm::vec3& higher = GetAABox().Higher();
     int index = 0;
-    float dist = abs(v.x - lower.x);
-    checkClose(abs(v.y - lower.y), dist, 1, index);
-    checkClose(abs(v.z - lower.z), dist, 2, index);
-    checkClose(abs(v.x - higher.x), dist, 3, index);
-    checkClose(abs(v.y - higher.y), dist, 4, index);
-    checkClose(abs(v.z - higher.z), dist, 5, index);
+    float dist = std::abs(v.x - lower.x);
+    checkClose(std::abs(v.y - lower.y), dist, 1, index);
+    checkClose(std::abs(v.z - lower.z), dist, 2, index);
+    checkClose(std::abs(v.x - higher.x), dist, 3, index);
+    checkClose(std::abs(v.y - higher.y), dist, 4, index);
+    checkClose(std::abs(v.z - higher.z), dist, 5, index);
     return index;
 }
 

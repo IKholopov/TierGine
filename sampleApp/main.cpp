@@ -29,7 +29,7 @@
 class SampleApp : public TierGine::GLBaseApp {
 public:
     SampleApp() : GLBaseApp(TierGine::WindowGLFW::Config(1024, 720, "Sample OpenGL App")) {
-        //Initializers().push_back(std::make_unique<TierGine::GLDebugInitializer>());
+        Initializers().push_back(std::make_unique<TierGine::GLDebugInitializer>());
     }
 protected:
     virtual TG_Status MainLoop() override;
@@ -71,24 +71,21 @@ void SampleApp::initializeBuffers()
     TierGine::IMesh& cubeMesh = *TierGine::Primitives::CreateCubeMesh(*GetContext(), 2.0f);
     std::unique_ptr<TierGine::ISceneObject> cube(new TierGine::BasicModel(cubeMesh));
     cube->SetPosition({7.0f, -3.0f, -3.0f});
-    listenrs.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_Y,
-                                                                   [cube=cube.get()](int action) {
+    listenrs.push_back(GetInputProvider().AddKeyListener(GLFW_KEY_Y, [cube=cube.get()](int) {
         auto rot = cube->GetScale();
         rot[0] += 0.01f;
         cube->SetScale(rot);
-    })));
-    listenrs.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_U,
-                                                                   [cube=cube.get()](int action) {
+    }));
+    listenrs.push_back(GetInputProvider().AddKeyListener(GLFW_KEY_U, [cube=cube.get()](int) {
         auto rot = cube->GetScale();
         rot[1] += 0.01f;
         cube->SetScale(rot);
-    })));
-    listenrs.push_back(std::move(GetInputProvider().AddKeyListener(GLFW_KEY_I,
-                                                                   [cube=cube.get()](int action) {
+    }));
+    listenrs.push_back(GetInputProvider().AddKeyListener(GLFW_KEY_I, [cube=cube.get()](int) {
         auto rot = cube->GetScale();
         rot[2] += 0.01f;
         cube->SetScale(rot);
-    })));
+    }));
     scene->Add(cube);
 
     for(int i = 0; i < 30; ++i) {

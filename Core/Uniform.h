@@ -19,6 +19,7 @@
 
 #include <TierGine.CoreDefs.h>
 
+#include <string>
 #include <vector>
 #include <assert.h>
 

@@ -46,6 +46,7 @@ public:
     GLTextureSampler(IContext& context, std::string unifromName);
 
     // ITextureSampler interface
+    virtual IContext& GetContext() const override { return context; }
     virtual void SetTileMode(const TileMode& mode) override;
     virtual void SetInterpolation(const Interpolation& interpolation) override;
     virtual UniformVariable GetUniform(IPipeline* pipeline) override;

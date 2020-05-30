@@ -60,8 +60,11 @@ private:
 class PhysicsWorld {
 public:
     interface ICollisionsIterator {
+        virtual ~ICollisionsIterator() {}
         virtual ICollisionSource* GetNext() = 0;
     };
+
+    virtual ~PhysicsWorld() {}
 
     void ApplyWorldUpdate();
 

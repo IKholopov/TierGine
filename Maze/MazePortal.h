@@ -23,10 +23,9 @@ namespace TG = TierGine;
 
 class MazePortal: public TG::BasicModel {
 public:
-    MazePortal(TG::IMesh& mesh, TG::ICamera* camera,
+    MazePortal(TG::IMesh& mesh,
                const glm::vec3& color=glm::vec3(0.2f, 0.3f, 0.9f)):
         BasicModel(mesh),
-        camera(camera),
         color(color),
         entry(nullptr),
         wall(0),
@@ -48,10 +47,8 @@ public:
     glm::mat4x4 GetViewMatrix(bool direct) const;
     glm::vec4 GetPlane(float distance, const glm::mat4x4& camView) const;
     bool IsOpened() const { return opened; }
-    void GetUVs(const TG::CameraData& cam);
 
 private:
-    TG::ICamera* camera;
     glm::vec3 color;
     const WalledEntry* entry;
     Byte wall;

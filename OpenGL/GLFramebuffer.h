@@ -27,11 +27,14 @@ public:
         BufferTexture(IContext& context, int width, int height);
 
         // ILoadableResource interface
-        virtual void LoadFromPath(std::string path) override { assert(false); }
+        virtual void LoadFromPath(std::string) override { assert(false); }
 
         // ITexture interface
         virtual IContext& GetContext() const override { return context; }
         virtual void Activate() const override;
+
+        int GetWidth() const { return width; }
+        int GetHeight() const { return height; }
 
     private:
         IContext& context;
@@ -46,7 +49,11 @@ public:
     // IFramebuffer interface
     virtual void Bind() override;
     virtual void Unbind() override;
-    virtual ITexture* GetTexture() override;
+    virtual ITexture* GetTexture() const override;
+    virtual IContext& GetContext() const override;
+
+    int GetWidth() const { return width; }
+    int GetHeight() const { return height; }
 
 private:
     IContext& context;

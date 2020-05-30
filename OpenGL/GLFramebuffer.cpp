@@ -72,9 +72,14 @@ void GLFramebuffer::Unbind()
             oldViewportValues[2], oldViewportValues[3]);
 }
 
-ITexture*GLFramebuffer::GetTexture()
+ITexture* GLFramebuffer::GetTexture() const
 {
     return texture.get();
+}
+
+IContext& GLFramebuffer::GetContext() const
+{
+    return context;
 }
 
 GLFramebuffer::BufferTexture::BufferTexture(IContext& context, int width, int height):

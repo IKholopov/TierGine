@@ -76,11 +76,6 @@ glm::vec4 MazePortal::GetPlane(float distance, const glm::mat4x4& camView) const
     return rotation;
 }
 
-void MazePortal::GetUVs(const TierGine::CameraData& cam)
-{
-    auto geometry = GetGeometry();
-}
-
 void MazePortal::applyMove()
 {
     WalledEntry wallEntry(*entry, wall);

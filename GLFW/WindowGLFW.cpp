@@ -29,14 +29,12 @@ WindowGLFW::WindowGLFW(const WindowGLFW::Config& config, IContext* context) :
     config(config),
     context(context)
 {
-    inputListeners.push_back(std::move(inputManager.AddKeyListener(GLFW_KEY_F11,
-                                                                   [this](int action) {
+    inputListeners.push_back(inputManager.AddKeyListener(GLFW_KEY_F11, [this](int action) {
         if(action == GLFW_PRESS) { this->Fullscreen(); }
-    }, 0.5f)));
-    inputListeners.push_back(std::move(inputManager.AddKeyListener(GLFW_KEY_ESCAPE,
-                                                                   [this](int action) {
+    }, 0.5f));
+    inputListeners.push_back(inputManager.AddKeyListener(GLFW_KEY_ESCAPE, [this](int action) {
         if(action == GLFW_PRESS) { this->Close(); }
-    })));
+    }));
 }
 
 WindowGLFW::~WindowGLFW()
@@ -117,7 +115,7 @@ TG_Status WindowGLFW::Create(bool useContext)
         return TG_Critical;
     }
     glfwSetCursorPosCallback(window, &mouseCallback);
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     windowCritical.lock();
     windows.insert({window, this});
     windowCritical.unlock();

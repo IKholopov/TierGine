@@ -80,8 +80,6 @@ private:
     TG::IFramebuffer* blueBuffer;
     TG::IFramebuffer* orangeBuffer;
     MazePhysicsEngine* engine;
-    int width;
-    int height;
     TG::UniformVariable left;
     TG::UniformVariable right;
     const int maxLevel = 3;
